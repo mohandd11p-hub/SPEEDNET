@@ -3,66 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص السرعة التفاعلي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <title>SpeedPulse - فحص سرعة الإنترنت</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://ipwho.is">
+    <link rel="preconnect" href="https://speed.cloudflare.com">
     <style>
         :root {
-            --bg: #050a15;
-            --card-bg: rgba(12, 22, 45, 0.85);
-            --border: rgba(0, 229, 255, 0.25);
-            --cyan: #00e5ff;
+            --bg: #060b18;
+            --bg-card: rgba(12, 20, 40, 0.6);
+            --fg: #e8edf5;
+            --muted: #5a6a85;
+            --accent: #00e5ff;
+            --accent2: #00ff88;
+            --border: rgba(0, 229, 255, 0.1);
+            --glow: rgba(0, 229, 255, 0.12);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: var(--bg);
-            color: #f1f5f9;
+            background: var(--bg);
+            color: var(--fg);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            overflow-x: hidden;
+        }
+
+        /* === تأثيرات الخلفية === */
+        .bg-blob {
+            position: fixed; border-radius: 50%;
+            filter: blur(130px); opacity: 0.13;
+            pointer-events: none; z-index: 0;
+        }
+        .bg-blob-1 {
+            width: 600px; height: 600px; background: var(--accent);
+            top: -220px; right: -180px;
+            animation: bf1 22s ease-in-out infinite;
+        }
+        .bg-blob-2 {
+            width: 500px; height: 500px; background: var(--accent2);
+            bottom: -160px; left: -160px;
+            animation: bf2 26s ease-in-out infinite;
+        }
+        .bg-blob-3 {
+            width: 350px; height: 350px; background: #e040fb;
+            top: 45%; left: 50%; transform: translate(-50%, -50%);
+            animation: bf3 19s ease-in-out infinite; opacity: 0.06;
+        }
+        @keyframes bf1 {
+            0%,100%{transform:translate(0,0) scale(1)}
+            33%{transform:translate(-70px,50px) scale(1.12)}
+            66%{transform:translate(40px,-30px) scale(.9)}
+        }
+        @keyframes bf2 {
+            0%,100%{transform:translate(0,0) scale(1)}
+            33%{transform:translate(50px,-40px) scale(1.15)}
+            66%{transform:translate(-40px,40px) scale(.88)}
+        }
+        @keyframes bf3 {
+            0%,100%{transform:translate(-50%,-50%) scale(1)}
+            50%{transform:translate(-50%,-50%) scale(1.35)}
         }
         .bg-grid {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image: linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-image:
+                linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
+            background-size: 55px 55px;
         }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
-        
-        .fast-number {
-            font-size: clamp(4.5rem, 16vw, 7rem);
-            line-height: 1;
-            font-weight: 900;
-            color: var(--cyan);
-            text-shadow: 0 0 25px rgba(0, 229, 255, 0.35);
-            transition: text-shadow 0.2s ease;
-        }
-
-        .fast-number.testing {
-            animation: pulseGlow 0.8s infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            0% { text-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
-            100% { text-shadow: 0 0 30px rgba(0, 229, 255, 0.7); }
-        }
-
-        .glass-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-        }
-
-        .reload-btn {
-            border: 2px solid var(--cyan);
-            color: var(--cyan);
-            background: rgba(0, 229, 255, 0.1);
-            transition: all 0.2s ease;
-        }
-        .reload-btn:active { transform: scale(0.9); }
-    </style>
-</head>
-<body class="relative z-10 min-h-screen
+        #particleCanvas {
+            position: fixed; inset:
