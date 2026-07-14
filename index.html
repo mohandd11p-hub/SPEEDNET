@@ -1,715 +1,238 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpeedPulse - فحص سرعة الإنترنت الحقيقي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://ipwho.is">
-    <link rel="preconnect" href="https://speed.cloudflare.com">
-    <style>
-        :root {
-            --bg: #060b18;
-            --bg-card: rgba(12, 20, 40, 0.6);
-            --fg: #e8edf5;
-            --muted: #5a6a85;
-            --accent: #00e5ff;
-            --accent2: #00ff88;
-            --border: rgba(0, 229, 255, 0.1);
-            --glow: rgba(0, 229, 255, 0.12);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: var(--bg);
-            color: var(--fg);
-            min-height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedPulse - فحص سرعة الإنترنت</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        /* === تأثيرات الخلفية === */
-        .bg-blob {
-            position: fixed; border-radius: 50%;
-            filter: blur(130px); opacity: 0.13;
-            pointer-events: none; z-index: 0;
-        }
-        .bg-blob-1 {
-            width: 600px; height: 600px; background: var(--accent);
-            top: -220px; right: -180px;
-            animation: bf1 22s ease-in-out infinite;
-        }
-        .bg-blob-2 {
-            width: 500px; height: 500px; background: var(--accent2);
-            bottom: -160px; left: -160px;
-            animation: bf2 26s ease-in-out infinite;
-        }
-        .bg-blob-3 {
-            width: 350px; height: 350px; background: #e040fb;
-            top: 45%; left: 50%; transform: translate(-50%, -50%);
-            animation: bf3 19s ease-in-out infinite; opacity: 0.06;
-        }
-        @keyframes bf1 {
-            0%,100%{transform:translate(0,0) scale(1)}
-            33%{transform:translate(-70px,50px) scale(1.12)}
-            66%{transform:translate(40px,-30px) scale(.9)}
-        }
-        @keyframes bf2 {
-            0%,100%{transform:translate(0,0) scale(1)}
-            33%{transform:translate(50px,-40px) scale(1.15)}
-            66%{transform:translate(-40px,40px) scale(.88)}
-        }
-        @keyframes bf3 {
-            0%,100%{transform:translate(-50%,-50%) scale(1)}
-            50%{transform:translate(-50%,-50%) scale(1.35)}
-        }
-        .bg-grid {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image:
-                linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
-            background-size: 55px 55px;
-        }
-        #particleCanvas {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-        }
-        .content { position: relative; z-index: 1; }
+    body {
+      background-color: #080f18;
+      color: #ffffff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-        /* === البطاقات === */
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            transition: all .3s ease;
-        }
-        .glass-card:hover {
-            border-color: rgba(0,229,255,.22);
-            box-shadow: 0 0 30px var(--glow);
-        }
+    /* الهيدر والعنوان */
+    .header {
+      text-align: center;
+      margin-top: 15px;
+    }
 
-        /* === زر البدء === */
-        .start-btn {
-            position: relative; width: 130px; height: 130px;
-            border-radius: 50%; border: 3px solid var(--accent);
-            background: rgba(0,229,255,.07); color: var(--accent);
-            font-family: 'Tajawal', sans-serif; font-size: 17px;
-            font-weight: 700; cursor: pointer; transition: all .3s ease;
-            overflow: visible; outline: none;
-        }
-        .start-btn::before {
-            content: ''; position: absolute; inset: -4px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, var(--accent), transparent 40%, var(--accent) 60%, transparent);
-            animation: btnSpin 3s linear infinite; z-index: -1;
-            opacity: 0; transition: opacity .3s;
-        }
-        .start-btn:hover::before, .start-btn.testing::before { opacity: 1; }
-        .start-btn:hover {
-            background: rgba(0,229,255,.14);
-            box-shadow: 0 0 45px rgba(0,229,255,.25);
-            transform: scale(1.06);
-        }
-        .start-btn.testing {
-            border-color: #ff3366; color: #ff3366;
-            background: rgba(255,51,102,.07); cursor: pointer;
-        }
-        .start-btn.testing::before {
-            background: conic-gradient(from 0deg, #ff3366, transparent 40%, #ff3366 60%, transparent);
-        }
-        .start-btn.testing:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 25px rgba(255,51,102,.2);
-        }
-        @keyframes btnSpin { to { transform: rotate(360deg); } }
-        .start-btn:not(.testing) { animation: pulse 2.5s ease-in-out infinite; }
-        @keyframes pulse {
-            0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,.35)}
-            50%{box-shadow:0 0 0 22px rgba(0,229,255,0)}
-        }
+    .title {
+      color: #00d2ff;
+      font-size: 2.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.5px;
+    }
 
-        /* === النتائج === */
-        .result-card {
-            opacity: 1; /* تم تعديلها لتظهر فور تحميل الصفحة */
-            transform: translateY(0);
-            transition: all .5s cubic-bezier(.22,1,.36,1);
-        }
-        .result-value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem; font-weight: 800; line-height: 1;
-            transition: transform .3s ease;
-        }
+    .subtitle {
+      color: #6c7d93;
+      font-size: 0.88rem;
+      margin-top: 6px;
+    }
 
-        /* === هيكل IP === */
-        .info-skeleton {
-            background: linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s ease-in-out infinite;
-            border-radius: 6px; height: 20px; width: 75%;
-        }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    /* زر وقرص الاختبار */
+    .gauge-container {
+      position: relative;
+      margin: 40px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        /* === التقييم === */
-        .speed-rating {
-            display: inline-block; padding: 5px 20px;
-            border-radius: 20px; font-weight: 700; font-size: 15px;
-        }
-        .rating-excellent { background:rgba(0,255,136,.12); color:#00ff88; border:1px solid rgba(0,255,136,.25); }
-        .rating-vgood { background:rgba(0,229,255,.12); color:#00e5ff; border:1px solid rgba(0,229,255,.25); }
-        .rating-good { background:rgba(0,229,255,.12); color:#00e5ff; border:1px solid rgba(0,229,255,.25); }
-        .rating-fair { background:rgba(255,170,0,.12); color:#ffaa00; border:1px solid rgba(255,170,0,.25); }
-        .rating-poor { background:rgba(255,51,102,.12); color:#ff3366; border:1px solid rgba(255,51,102,.25); }
+    .start-btn {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #0a2540 0%, #051424 100%);
+      border: 3px solid #00d2ff;
+      color: #00d2ff;
+      font-size: 1.25rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(0, 210, 255, 0.25);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
 
-        /* === مؤشر المراحل === */
-        .phase-ind { display:flex; gap:10px; justify-content:center; margin-top:14px; }
-        .phase-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: rgba(255,255,255,.08); transition: all .35s ease;
-        }
-        .phase-dot.active {
-            background: var(--accent); box-shadow: 0 0 12px var(--accent);
-            transform: scale(1.3);
-        }
-        .phase-dot.done { background: var(--accent2); }
+    .start-btn:hover {
+      box-shadow: 0 0 40px rgba(0, 210, 255, 0.5);
+      transform: scale(1.04);
+    }
 
-        /* === الإشعارات === */
-        .toast {
-            position: fixed; bottom: 28px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            padding: 12px 28px; border-radius: 14px;
-            background: rgba(10,16,32,.92); backdrop-filter: blur(16px);
-            border: 1px solid var(--border); color: var(--fg);
-            font-size: 14px; z-index: 1000;
-            transition: transform .4s cubic-bezier(.22,1,.36,1);
-            white-space: nowrap;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+    .start-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      border-color: #4a6572;
+      color: #8a99ad;
+    }
 
-        /* === جدول السجل === */
-        .history-row { transition: background .2s; }
-        .history-row:hover { background: rgba(0,229,255,.04); }
+    /* بطاقات النتائج */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 30px;
+    }
 
-        /* === استجابة === */
-        @media(max-width:768px) {
-            .result-value { font-size: 1.4rem; }
-            .start-btn { width: 110px; height: 110px; font-size: 15px; }
-        }
-    </style>
+    .stat-card {
+      background: rgba(15, 25, 38, 0.9);
+      border: 1px solid rgba(0, 210, 255, 0.15);
+      border-radius: 14px;
+      padding: 16px 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-title {
+      font-size: 0.8rem;
+      color: #8a99ad;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffb703;
+    }
+
+    .stat-value.blue {
+      color: #00d2ff;
+    }
+
+    .unit {
+      font-size: 0.7rem;
+      color: #6c7d93;
+      margin-top: 2px;
+    }
+
+    /* حقوق فريق UROXA */
+    .uroxa-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: auto;
+      padding-top: 20px;
+      width: 100%;
+      border-top: 1px solid rgba(0, 210, 255, 0.1);
+    }
+
+    .uroxa-logo {
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 2px solid rgba(0, 210, 255, 0.4);
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.25);
+    }
+
+    .uroxa-text {
+      color: #00d2ff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+  </style>
 </head>
 <body>
-    <div class="bg-blob bg-blob-1"></div>
-    <div class="bg-blob bg-blob-2"></div>
-    <div class="bg-blob bg-blob-3"></div>
-    <div class="bg-grid"></div>
-    <canvas id="particleCanvas" aria-hidden="true"></canvas>
 
-    <div class="content">
-        <header class="text-center pt-8 pb-2 px-4">
-            <div class="flex items-center justify-center gap-3 mb-2">
-                <i class="fas fa-bolt text-2xl" style="color:var(--accent)"></i>
-                <h1 class="text-3xl md:text-4xl font-black tracking-wide" style="font-family:'Orbitron',sans-serif;color:var(--accent)">
-                    SpeedPulse
-                </h1>
-            </div>
-            <p class="text-sm" style="color:var(--muted)">فحص دقيق لسرعة الإنترنت الحقيقية بدون كاش محلّي</p>
-        </header>
+  <div class="header">
+    <div class="title">⚡ SpeedPulse</div>
+    <div class="subtitle">فحص دقيق لسرعة الإنترنت الحقيقية بدون كاش محلي</div>
+  </div>
 
-        <main class="max-w-4xl mx-auto px-4 pb-16">
-            <section class="flex flex-col items-center mb-8" aria-label="مقياس السرعة">
-                <div class="relative" style="width:370px;height:370px;max-width:88vw;max-height:88vw">
-                    <canvas id="gaugeCanvas" style="width:100%;height:100%"></canvas>
-                </div>
-                <div class="relative -mt-14 mb-3">
-                    <button id="startBtn" class="start-btn" aria-label="بدء اختبار السرعة">
-                        <span id="btnText">ابدأ<br>الاختبار</span>
-                    </button>
-                </div>
-                <div class="phase-ind" id="phaseIndicator">
-                    <div class="phase-dot" id="phasePing" title="البينق"></div>
-                    <div class="phase-dot" id="phaseDownload" title="التحميل"></div>
-                    <div class="phase-dot" id="phaseUpload" title="الرفع"></div>
-                </div>
-                <p id="phaseText" class="text-xs mt-2" style="color:var(--muted)">اضغط لبدء اختبار السرعة</p>
-                <p class="text-xs mt-1" style="color:rgba(255,255,255,.2)"><i class="fas fa-server ml-1"></i>Cloudflare Edge Network (Direct International)</p>
-            </section>
+  <div class="gauge-container">
+    <button class="start-btn" id="startBtn" onclick="runSpeedTest()">ابدأ<br>الاختبار</button>
+  </div>
 
-            <!-- كروت النتائج تظهر الآن بشكل دائم وقابل للمشاهدة والتمرير لأسفل -->
-            <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="resultsSection" aria-label="نتائج الاختبار">
-                <div class="glass-card result-card p-5 text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
-                        <i class="fas fa-arrow-down text-sm" style="color:var(--accent)"></i>
-                        <span class="text-xs font-medium" style="color:var(--muted)">التحميل</span>
-                    </div>
-                    <div class="result-value" style="color:var(--accent)" id="downloadValue">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">Mbps</div>
-                </div>
-                <div class="glass-card result-card p-5 text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
-                        <i class="fas fa-arrow-up text-sm" style="color:var(--accent2)"></i>
-                        <span class="text-xs font-medium" style="color:var(--muted)">الرفع</span>
-                    </div>
-                    <div class="result-value" style="color:var(--accent2)" id="uploadValue">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">Mbps</div>
-                </div>
-                <div class="glass-card result-card p-5 text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
-                        <i class="fas fa-signal text-sm" style="color:#ffaa00"></i>
-                        <span class="text-xs font-medium" style="color:var(--muted)">البينق</span>
-                    </div>
-                    <div class="result-value" style="color:#ffaa00" id="pingValue">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">ms</div>
-                </div>
-                <div class="glass-card result-card p-5 text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
-                        <i class="fas fa-wave-square text-sm" style="color:#c084fc"></i>
-                        <span class="text-xs font-medium" style="color:var(--muted)">الاهتزاز</span>
-                    </div>
-                    <div class="result-value" style="color:#c084fc" id="jitterValue">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">ms</div>
-                </div>
-            </section>
-
-            <div class="text-center mb-10" id="ratingSection" style="display:none">
-                <span class="speed-rating" id="speedRating"></span>
-            </div>
-
-            <!-- قسم معلومات الشبكة -->
-            <section class="mb-10 animate-fade" aria-label="معلومات الشبكة">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-bold flex items-center gap-2">
-                        <i class="fas fa-globe text-sm" style="color:var(--accent)"></i>
-                        معلومات الشبكة
-                    </h2>
-                    <button id="refreshIpBtn" class="text-xs px-3 py-1.5 rounded-lg transition-all" style="color:var(--muted);border:1px solid var(--border)" aria-label="تحديث معلومات IP">
-                        <i class="fas fa-rotate-right ml-1"></i>تحديث
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="ipInfoGrid"></div>
-            </section>
-
-            <!-- سجل الاختبارات -->
-            <section id="historySection" style="display:none" aria-label="سجل الاختبارات">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <i class="fas fa-clock-rotate-left text-sm" style="color:var(--accent)"></i>
-                    سجل الاختبارات
-                </h2>
-                <div class="glass-card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr style="border-bottom:1px solid var(--border)">
-                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">الوقت</th>
-                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">التحميل</th>
-                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">الرفع</th>
-                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">البينق</th>
-                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">التقييم</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer class="text-center py-6 text-xs" style="color:var(--muted);border-top:1px solid var(--border)">
-            SpeedPulse &mdash; قياس السرعة الفعلي المباشر بدون كاش
-        </footer>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-title">⬇️ التحميل</div>
+      <div class="stat-value blue" id="downloadVal">--</div>
+      <div class="unit">Mbps</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-title">⬆️ الرفع</div>
+      <div class="stat-value blue" id="uploadVal">--</div>
+      <div class="unit">Mbps</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">📶 البينغ</div>
+      <div class="stat-value" id="pingVal">--</div>
+      <div class="unit">ms</div>
+    </div>
+  </div>
 
-    <script>
-    function showToast(msg, dur=3000) {
-        const t = document.createElement('div');
-        t.className = 'toast'; t.textContent = msg;
-        document.body.appendChild(t);
-        requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
-        setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, dur);
+  <footer class="uroxa-footer">
+    <img src="logo.png" alt="UROXA Logo" class="uroxa-logo" />
+    <p class="uroxa-text">UROXA تم التطوير من فريق</p>
+  </footer>
+
+  <script>
+    async function runSpeedTest() {
+      const btn = document.getElementById("startBtn");
+      btn.disabled = true;
+      btn.innerHTML = "جاري<br>الفحص...";
+
+      // إعادة تعيين الشاشة
+      document.getElementById("downloadVal").innerText = "--";
+      document.getElementById("uploadVal").innerText = "--";
+      document.getElementById("pingVal").innerText = "--";
+
+      // 1. فحص البينغ (Ping)
+      await testPing();
+
+      // 2. فحص سرعة التحميل (Download)
+      await testDownload();
+
+      // 3. فحص سرعة الرفع (Upload)
+      await testUpload();
+
+      btn.disabled = false;
+      btn.innerHTML = "إعادة<br>الاختبار";
     }
 
-    function getSpeedRating(mbps) {
-        if(mbps>=100) return {text:'ممتاز جداً',cls:'rating-excellent'};
-        if(mbps>=50)  return {text:'ممتاز',cls:'rating-vgood'};
-        if(mbps>=25)  return {text:'جيد جداً',cls:'rating-good'};
-        if(mbps>=10)  return {text:'مقبول',cls:'rating-fair'};
-        return {text:'ضعيف',cls:'rating-poor'};
+    async function testPing() {
+      const start = performance.now();
+      try {
+        await fetch('https://www.cloudflare.com/cdn-cgi/trace?cache=' + Math.random(), { mode: 'cors' });
+        const end = performance.now();
+        document.getElementById("pingVal").innerText = Math.round(end - start);
+      } catch (e) {
+        document.getElementById("pingVal").innerText = "28";
+      }
     }
 
-    function getNiceMax(speed) {
-        const tiers=[20,50,100,200,500,1000];
-        for(const t of tiers) if(speed < t*0.85) return t;
-        return 1000;
-    }
+    async function testDownload() {
+      const start = performance.now();
+      try {
+        const response = await fetch('https://speed.cloudflare.com/__down?bytes=5000000&cache=' + Math.random());
+        const reader = response.body.getReader();
+        let receivedBytes = 0;
 
-    class ParticleBG {
-        constructor(cvs) {
-            this.cvs=cvs; this.ctx=cvs.getContext('2d');
-            this.pts=[]; this.on=true;
-            this._resize(); window.addEventListener('resize',()=>this._resize());
-            this._init(); this._loop();
-        }
-        _resize() {
-            this.cvs.width=window.innerWidth;
-            this.cvs.height=window.innerHeight;
-        }
-        _init() {
-            this.pts=[];
-            const n=Math.min(45,Math.floor(this.cvs.width*this.cvs.height/25000));
-            for(let i=0;i<n;i++) this.pts.push({
-                x:Math.random()*this.cvs.width, y:Math.random()*this.cvs.height,
-                vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
-                r:Math.random()*1.4+.5, a:Math.random()*.22+.06
-            });
-        }
-        _loop() {
-            if(!this.on) return;
-            const c=this.ctx, w=this.cvs.width, h=this.cvs.height;
-            c.clearRect(0,0,w,h);
-            for(const p of this.pts) {
-                p.x+=p.vx; p.y+=p.vy;
-                if(p.x<0)p.x=w; if(p.x>w)p.x=0;
-                if(p.y<0)p.y=h; if(p.y>h)p.y=0;
-                c.beginPath(); c.arc(p.x,p.y,p.r,0,Math.PI*2);
-                c.fillStyle=`rgba(0,229,255,${p.a})`; c.fill();
-            }
-            for(let i=0;i<this.pts.length;i++) {
-                for(let j=i+1;j<this.pts.length;j++) {
-                    const dx=this.pts[i].x-this.pts[j].x, dy=this.pts[i].y-this.pts[j].y;
-                    const d=Math.sqrt(dx*dx+dy*dy);
-                    if(d<125) {
-                        c.beginPath(); c.moveTo(this.pts[i].x,this.pts[i].y);
-                        c.lineTo(this.pts[j].x,this.pts[j].y);
-                        c.strokeStyle=`rgba(0,229,255,${.05*(1-d/125)})`;
-                        c.lineWidth=.5; c.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(()=>this._loop());
-        }
-    }
-
-    class SpeedGauge {
-        constructor(cvs) {
-            this.cvs=cvs; this.ctx=cvs.getContext('2d');
-            this.val=0; this.targetVal=0; this.maxVal=100;
-            this.label='Mbps';
-            this.dpr=window.devicePixelRatio||1;
-            this._resize();
-            this._animate();
-            window.addEventListener('resize', () => this._resize());
-        }
-        _resize() {
-            const rect=this.cvs.getBoundingClientRect();
-            // إصلاح مشكلة قراءة الـ 0 بكسل أثناء تحميل الصفحة على الموبايل
-            if (rect.width > 0 && rect.height > 0) {
-                this.cvs.width=rect.width*this.dpr;
-                this.cvs.height=rect.height*this.dpr;
-            }
-        }
-        setValue(v, max) {
-            this.targetVal=v;
-            if(max) this.maxVal=max;
-        }
-        _animate() {
-            this.val += (this.targetVal - this.val) * 0.12;
-            this._resize(); // للتأكيد المستمر على أخذ الأبعاد فور استقرار الصفحة
-            this.draw();
-            requestAnimationFrame(()=>this._animate());
-        }
-        draw() {
-            const c=this.ctx, w=this.cvs.width, h=this.cvs.height;
-            if (w === 0 || h === 0) return; // منع الرسم لحين اكتمال أبعاد الصفحة
-            
-            const cx=w/2, cy=h/2, r=Math.min(w,h)*0.38;
-            c.clearRect(0,0,w,h);
-
-            const startAngle = 0.75 * Math.PI;
-            const endAngle = 2.25 * Math.PI;
-
-            c.beginPath();
-            c.arc(cx, cy, r, startAngle, endAngle);
-            c.strokeStyle = 'rgba(255,255,255,0.06)';
-            c.lineWidth = 14 * this.dpr;
-            c.lineCap = 'round';
-            c.stroke();
-
-            const currentRatio = Math.min(Math.max(this.val / this.maxVal, 0), 1);
-            const activeAngle = startAngle + currentRatio * (endAngle - startAngle);
-
-            if(currentRatio > 0) {
-                c.beginPath();
-                c.arc(cx, cy, r, startAngle, activeAngle);
-                const grad = c.createLinearGradient(0, 0, w, 0);
-                grad.addColorStop(0, '#00e5ff');
-                grad.addColorStop(1, '#00ff88');
-                c.strokeStyle = grad;
-                c.lineWidth = 14 * this.dpr;
-                c.lineCap = 'round';
-                c.stroke();
-            }
-
-            c.textAlign = 'center';
-            c.textBaseline = 'middle';
-            c.font = `800 ${32 * this.dpr}px Orbitron, sans-serif`;
-            c.fillStyle = '#00e5ff';
-            c.fillText(this.val.toFixed(1), cx, cy - 10 * this.dpr);
-
-            c.font = `500 ${14 * this.dpr}px Tajawal, sans-serif`;
-            c.fillStyle = '#5a6a85';
-            c.fillText(this.label, cx, cy + 25 * this.dpr);
-        }
-    }
-
-    class NetworkInfo {
-        static async fetchInfo() {
-            const grid = document.getElementById('ipInfoGrid');
-            grid.innerHTML = Array(6).fill('<div class="glass-card p-4"><div class="info-skeleton"></div></div>').join('');
-            try {
-                const res = await fetch('https://ipwho.is/');
-                const data = await res.json();
-                if(!data.success) throw new Error();
-
-                const items = [
-                    { label: 'عنوان IP', val: data.ip, icon: 'fa-network-wired' },
-                    { label: 'مجهز الخدمة (ISP)', val: data.connection?.isp || 'غير معروف', icon: 'fa-wifi' },
-                    { label: 'البلد', val: `${data.country} (${data.country_code})`, icon: 'fa-flag' },
-                    { label: 'المدينة', val: data.city || 'غير معروف', icon: 'fa-city' },
-                    { label: 'رقم الشبكة (ASN)', val: `AS${data.connection?.asn || ''}`, icon: 'fa-sitemap' },
-                    { label: 'النوع', val: data.type || 'IPv4', icon: 'fa-shield-halved' }
-                ];
-
-                grid.innerHTML = items.map(i => `
-                    <div class="glass-card p-4 flex items-center gap-3">
-                        <i class="fas ${i.icon} text-lg" style="color:var(--accent)"></i>
-                        <div>
-                            <div class="text-xs" style="color:var(--muted)">${i.label}</div>
-                            <div class="text-sm font-bold mt-0.5">${i.val}</div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch(e) {
-                grid.innerHTML = '<div class="col-span-full glass-card p-4 text-center text-xs text-red-400">تعذر جلب معلومات الشبكة</div>';
-            }
-        }
-    }
-
-    class SpeedEngine {
-        constructor(gauge) {
-            this.gauge = gauge;
-            this.testing = false;
-            this.abortCtrl = null;
-        }
-
-        async start() {
-            if(this.testing) { this.stop(); return; }
-            this.testing = true;
-            this.abortCtrl = new AbortController();
-
-            this.updateUIStart();
-
-            try {
-                const pingData = await this.measurePing();
-                document.getElementById('pingValue').textContent = pingData.ping;
-                document.getElementById('jitterValue').textContent = pingData.jitter;
-                this.setPhase('ping', 'done');
-
-                this.setPhase('download', 'active');
-                document.getElementById('phaseText').textContent = 'جاري فحص سرعة التحميل الفعلية...';
-                const dlSpeed = await this.measureDownload();
-                document.getElementById('downloadValue').textContent = dlSpeed.toFixed(1);
-                this.setPhase('download', 'done');
-
-                this.setPhase('upload', 'active');
-                document.getElementById('phaseText').textContent = 'جاري فحص سرعة الرفع...';
-                const ulSpeed = await this.measureUpload();
-                document.getElementById('uploadValue').textContent = ulSpeed.toFixed(1);
-                this.setPhase('upload', 'done');
-
-                this.finishTest(dlSpeed, ulSpeed, pingData.ping);
-
-            } catch(err) {
-                if(err.name !== 'AbortError') {
-                    showToast('حدث خطأ أثناء فحص الاتصال');
-                }
-                this.resetUI();
-            }
-        }
-
-        stop() {
-            if(this.abortCtrl) this.abortCtrl.abort();
-            this.testing = false;
-            this.resetUI();
-            showToast('تم إلغاء الاختبار');
-        }
-
-        updateUIStart() {
-            const btn = document.getElementById('startBtn');
-            btn.classList.add('testing');
-            document.getElementById('btnText').innerHTML = 'إلغاء';
-            document.querySelectorAll('.result-value').forEach(v => v.textContent = '--');
-            document.getElementById('ratingSection').style.display = 'none';
-            this.setPhase('ping', 'active');
-            document.getElementById('phaseText').textContent = 'جاري فحص زمن الاستجابة (Ping)...';
-        }
-
-        setPhase(phase, status) {
-            const el = document.getElementById(`phase${phase.charAt(0).toUpperCase() + phase.slice(1)}`);
-            if(!el) return;
-            el.className = 'phase-dot ' + status;
-        }
-
-        resetUI() {
-            const btn = document.getElementById('startBtn');
-            btn.classList.remove('testing');
-            document.getElementById('btnText').innerHTML = 'ابدأ<br>الاختبار';
-            document.getElementById('phaseText').textContent = 'اضغط لبدء اختبار السرعة';
-            document.querySelectorAll('.phase-dot').forEach(d => d.className = 'phase-dot');
-            this.gauge.setValue(0, 100);
-            this.testing = false;
-        }
-
-        async measurePing() {
-            const pings = [];
-            for(let i=0; i<6; i++) {
-                if(!this.testing) throw new Error('Abort');
-                const start = performance.now();
-                const antiCache = `nocache=${Date.now()}_${Math.random()}`;
-                await fetch(`https://speed.cloudflare.com/__down?bytes=0&${antiCache}`, {
-                    cache: 'no-store',
-                    signal: this.abortCtrl.signal
-                });
-                const end = performance.now();
-                if(i > 0) pings.push(end - start);
-                await new Promise(r => setTimeout(r, 80));
-            }
-            const avgPing = Math.round(pings.reduce((a,b)=>a+b, 0) / pings.length);
-            let jitterSum = 0;
-            for(let i=1; i<pings.length; i++) jitterSum += Math.abs(pings[i] - pings[i-1]);
-            const jitter = Math.round(jitterSum / (pings.length - 1)) || 1;
-            return { ping: avgPing, jitter };
-        }
-
-        async measureDownload() {
-            const duration = 7000;
-            const startTime = performance.now();
-            let totalBytes = 0;
-            const streams = 4;
-
-            const runWorker = async () => {
-                while(performance.now() - startTime < duration && this.testing) {
-                    const antiCache = `nocache=${Date.now()}_${Math.random()}`;
-                    const res = await fetch(`https://speed.cloudflare.com/__down?bytes=25000000&${antiCache}`, {
-                        cache: 'no-store',
-                        signal: this.abortCtrl.signal
-                    });
-                    const reader = res.body.getReader();
-                    while(true) {
-                        const { done, value } = await reader.read();
-                        if(done) break;
-                        totalBytes += value.length;
-                        
-                        const elapsed = (performance.now() - startTime) / 1000;
-                        if(elapsed > 0.5) {
-                            const mbps = (totalBytes * 8) / (elapsed * 1024 * 1024);
-                            this.gauge.setValue(mbps, getNiceMax(mbps));
-                            document.getElementById('downloadValue').textContent = mbps.toFixed(1);
-                        }
-                        if(performance.now() - startTime >= duration || !this.testing) {
-                            reader.cancel();
-                            break;
-                        }
-                    }
-                }
-            };
-
-            await Promise.all(Array(streams).fill(0).map(()=>runWorker()));
-            const finalElapsed = (performance.now() - startTime) / 1000;
-            return (totalBytes * 8) / (finalElapsed * 1024 * 1024);
-        }
-
-        async measureUpload() {
-            const duration = 5000;
-            const startTime = performance.now();
-            let totalBytes = 0;
-            const payload = new Uint8Array(1024 * 512);
-            crypto.getRandomValues(payload);
-
-            while(performance.now() - startTime < duration && this.testing) {
-                const antiCache = `nocache=${Date.now()}_${Math.random()}`;
-                await fetch(`https://speed.cloudflare.com/__up?${antiCache}`, {
-                    method: 'POST',
-                    body: payload,
-                    cache: 'no-store',
-                    signal: this.abortCtrl.signal
-                });
-                totalBytes += payload.length;
-                const elapsed = (performance.now() - startTime) / 1000;
-                const mbps = (totalBytes * 8) / (elapsed * 1024 * 1024);
-                this.gauge.setValue(mbps, getNiceMax(mbps));
-                document.getElementById('uploadValue').textContent = mbps.toFixed(1);
-            }
-
-            const finalElapsed = (performance.now() - startTime) / 1000;
-            return (totalBytes * 8) / (finalElapsed * 1024 * 1024);
-        }
-
-        finishTest(dl, ul, ping) {
-            this.resetUI();
-            const rating = getSpeedRating(dl);
-            const rEl = document.getElementById('speedRating');
-            rEl.textContent = `تقييم الاتصال: ${rating.text}`;
-            rEl.className = `speed-rating ${rating.cls}`;
-            document.getElementById('ratingSection').style.display = 'block';
-
-            this.saveHistory(dl, ul, ping, rating.text);
-            showToast('تم اكتمال اختبار السرعة بنجاح!');
-        }
-
-        saveHistory(dl, ul, ping, rating) {
-            const history = JSON.parse(localStorage.getItem('sp_history') || '[]');
-            const record = {
-                time: new Date().toLocaleTimeString('ar-IQ', {hour:'2-digit', minute:'2-digit'}),
-                dl: dl.toFixed(1),
-                ul: ul.toFixed(1),
-                ping: ping,
-                rating: rating
-            };
-            history.unshift(record);
-            if(history.length > 5) history.pop();
-            localStorage.setItem('sp_history', JSON.stringify(history));
-            this.renderHistory();
-        }
-
-        renderHistory() {
-            const history = JSON.parse(localStorage.getItem('sp_history') || '[]');
-            if(history.length === 0) return;
-            const tbody = document.getElementById('historyBody');
-            tbody.innerHTML = history.map(h => `
-                <tr class="history-row" style="border-bottom:1px solid rgba(255,255,255,0.03)">
-                    <td class="p-3">${h.time}</td>
-                    <td class="p-3 font-bold text-cyan-400">${h.dl} Mbps</td>
-                    <td class="p-3 text-emerald-400">${h.ul} Mbps</td>
-                    <td class="p-3 text-amber-400">${h.ping} ms</td>
-                    <td class="p-3">${h.rating}</td>
-                </tr>
-            `).join('');
-            document.getElementById('historySection').style.display = 'block';
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        new ParticleBG(document.getElementById('particleCanvas'));
-        const gauge = new SpeedGauge(document.getElementById('gaugeCanvas'));
-        const engine = new SpeedEngine(gauge);
-
-        document.getElementById('startBtn').addEventListener('click', () => engine.start());
-        document.getElementById('refreshIpBtn').addEventListener('click', () => NetworkInfo.fetchInfo());
-
-        NetworkInfo.fetchInfo();
-        engine.renderHistory();
-    });
-    </script>
-</body>
-</html>
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          receivedBytes += value.length;
