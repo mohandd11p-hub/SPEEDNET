@@ -2,74 +2,119 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص سرعة الإنترنت</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedPulse - فحص السرعة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://ipwho.is">
-    <link rel="preconnect" href="https://speed.cloudflare.com">
     <style>
-        :root {
-            --bg: #060b18;
-            --bg-card: rgba(12, 20, 40, 0.6);
-            --fg: #e8edf5;
-            --muted: #5a6a85;
-            --accent: #00e5ff;
-            --accent2: #00ff88;
-            --border: rgba(0, 229, 255, 0.1);
-            --glow: rgba(0, 229, 255, 0.12);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: var(--bg);
-            color: var(--fg);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* === تأثيرات الخلفية === */
-        .bg-blob {
-            position: fixed; border-radius: 50%;
-            filter: blur(130px); opacity: 0.13;
-            pointer-events: none; z-index: 0;
-        }
-        .bg-blob-1 {
-            width: 600px; height: 600px; background: var(--accent);
-            top: -220px; right: -180px;
-            animation: bf1 22s ease-in-out infinite;
-        }
-        .bg-blob-2 {
-            width: 500px; height: 500px; background: var(--accent2);
-            bottom: -160px; left: -160px;
-            animation: bf2 26s ease-in-out infinite;
-        }
-        .bg-blob-3 {
-            width: 350px; height: 350px; background: #e040fb;
-            top: 45%; left: 50%; transform: translate(-50%, -50%);
-            animation: bf3 19s ease-in-out infinite; opacity: 0.06;
-        }
-        @keyframes bf1 {
-            0%,100%{transform:translate(0,0) scale(1)}
-            33%{transform:translate(-70px,50px) scale(1.12)}
-            66%{transform:translate(40px,-30px) scale(.9)}
-        }
-        @keyframes bf2 {
-            0%,100%{transform:translate(0,0) scale(1)}
-            33%{transform:translate(50px,-40px) scale(1.15)}
-            66%{transform:translate(-40px,40px) scale(.88)}
-        }
-        @keyframes bf3 {
-            0%,100%{transform:translate(-50%,-50%) scale(1)}
-            50%{transform:translate(-50%,-50%) scale(1.35)}
+            background-color: #080d19;
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
         }
         .bg-grid {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image:
-                linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
-            background-size: 55px 55px;
+            position: fixed; inset: 0; z-index: 0; opacity: 0.15; pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.2) 1px, transparent 1px);
+            background-size: 35px 35px;
         }
-        #particleCanvas {
-            position: fixed; inset:
+        .num-font { font-family: 'Orbitron', sans-serif; }
+        
+        .glowing-bar {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+            transition: width 0.3s ease;
+        }
+        .glass-panel {
+            background-color: rgba(17, 26, 48, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+        .action-btn {
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .spin-anim { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="relative min-h-screen flex flex-col items-center overflow-x-hidden">
+    
+    <div class="bg-grid"></div>
+
+    <div class="relative z-10 w-full max-w-md p-5 flex flex-col h-screen justify-between">
+        
+        <header class="flex justify-between items-center w-full pt-2">
+            <button id="refreshIpBtn" class="w-10 h-10 rounded-full border border-[#00e5ff] text-[#00e5ff] flex items-center justify-center action-btn">
+                <i class="fas fa-redo-alt text-sm"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold num-font text-[#00e5ff] tracking-wide">SpeedPulse</h1>
+                <i class="fas fa-bolt text-[#00e5ff] text-xl"></i>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col items-center justify-center w-full mt-4">
+            <p class="text-gray-400 text-sm mb-3" id="testStatus">سرعة التنزيل الحالية</p>
+            
+            <div class="flex items-baseline gap-3 mb-1">
+                <span class="text-[#00e5ff] text-2xl font-medium">Mbps</span>
+                <span id="downloadValue" class="text-7xl font-bold num-font text-[#00e5ff] drop-shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">0.0</span>
+            </div>
+
+            <div id="badgeComplete" class="px-3 py-0.5 rounded-full border border-[#00ff88] text-[#00ff88] text-[10px] mb-4 opacity-0 transition-opacity">مكتمل</div>
+
+            <div class="w-full bg-gray-800 h-1.5 rounded-full mb-10 overflow-hidden">
+                <div id="progressBar" class="h-full bg-[#00e5ff] w-0 glowing-bar"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 w-full mb-4">
+                <div class="glass-panel p-3 flex flex-col items-center justify-center">
+                    <p class="text-gray-400 text-xs mb-2 flex items-center gap-1">
+                        الاهتزاز <i class="fas fa-wave-square text-[#c084fc]"></i>
+                    </p>
+                    <p id="jitterValue" class="text-[#c084fc] text-xl font-bold num-font">--</p>
+                    <p class="text-gray-500 text-[10px] mt-1">ms</p>
+                </div>
+                
+                <div class="glass-panel p-3 flex flex-col items-center justify-center">
+                    <p class="text-gray-400 text-xs mb-2 flex items-center gap-1">
+                        البينغ <i class="fas fa-stopwatch text-[#ffaa00]"></i>
+                    </p>
+                    <p id="pingValue" class="text-[#ffaa00] text-xl font-bold num-font">--</p>
+                    <p class="text-gray-500 text-[10px] mt-1">ms</p>
+                </div>
+
+                <div class="glass-panel p-3 flex flex-col items-center justify-center">
+                    <p class="text-gray-400 text-xs mb-2 flex items-center gap-1">
+                        الرفع <i class="fas fa-arrow-up text-[#00ff88]"></i>
+                    </p>
+                    <p id="uploadValue" class="text-[#00ff88] text-xl font-bold num-font">--</p>
+                    <p class="text-gray-500 text-[10px] mt-1">Mbps</p>
+                </div>
+            </div>
+
+            <div class="glass-panel w-full p-4 flex flex-col gap-3 text-xs">
+                <div class="flex justify-between items-start">
+                    <span id="ispVal" class="text-white font-medium text-left leading-relaxed max-w-[70%]">جاري التحميل...</span>
+                    <span class="text-gray-400 whitespace-nowrap ml-2">المزود (ISP):</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span id="ipVal" class="text-white font-medium num-font tracking-wider">--</span>
+                    <span class="text-gray-400 whitespace-nowrap ml-2">العنوان (IP):</span>
+                </div>
+            </div>
+        </main>
+
+        <div class="w-full flex justify-center pb-6 mt-4">
+            <button id="startBtn" class="w-14 h-14 rounded-full border-2 border-[#00e5ff] flex items-center justify-center bg-[#080d19] action-btn group">
+                <i id="btnIcon" class="fas fa-exchange-alt text-2xl text-[#ffaa00] -rotate-45 group-hover:scale-110 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const $
