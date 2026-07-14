@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedPulse - فحص سرعة الإنترنت</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://ipwho.is">
+    <link rel="preconnect" href="https://speed.cloudflare.com">
+    <style>
+        :root {
+            --bg: #060b18;
+            --bg-card: rgba(12, 20, 40, 0.6);
+            --fg: #e8edf5;
+            --muted: #5a6a85;
+            --accent: #00e5ff;
+            --accent2: #00ff88;
+            --border: rgba(0, 229, 255, 0.1);
+            --glow: rgba(0, 229, 255, 0.12);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-blob {
+            position: fixed; border-radius: 50%;
+            filter: blur(130px); opacity: 0.13;
+            pointer-events: none; z-index: 0;
+        }
+        .bg-blob-1 {
+            width: 600px; height: 600px; background: var(--accent);
+            top: -220px; right: -180px;
+            animation: bf1 22s ease-in-out infinite;
+        }
+        .bg-blob-2 {
+            width: 500px; height: 500px; background: var(--accent2);
+            bottom: -160px; left: -160px;
+            animation: bf2 26s ease-in-out infinite;
+        }
+        .bg-blob-3 {
+            width: 350px; height: 350px; background: #e040fb;
+            top: 45%; left: 50%; transform: translate(-50%, -50%);
+            animation: bf3 19s ease-in-out infinite; opacity: 0.06;
+        }
+        @keyframes bf1 {
+            0%,100%{transform:translate(0,0) scale(1)}
+            33%{transform:translate(-70px,50px) scale(1.12)}
+            66%{transform:translate(40px,-30px) scale(.9)}
+        }
+        @keyframes bf2 {
+            0%,100%{transform:translate(0,0) scale(1)}
+            33%{transform:translate(50px,-40px) scale(1.15)}
+            66%{transform:translate(-40px,40px) scale(.88)}
+        }
+        @keyframes bf3 {
+            0%,100%{transform:translate(-50%,-50%) scale(1)}
+            50%{transform:translate(-50%,-50%) scale(1.35)}
+        }
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
+            background-size: 55px 55px;
+        }
+        #particleCanvas {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        }
+        .content { position: relative; z-index: 1; }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: all .3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(0,229,255,.22);
+            box-shadow: 0 0 30px var(--glow);
+        }
+
+        .start-btn {
+            position: relative; width: 130px; height: 130px;
+            border-radius: 50%; border: 3px solid var(--accent);
+            background: rgba(0,229,255,.07); color: var(--accent);
+            font-family: 'Tajawal', sans-serif; font-size: 17px;
+            font-weight: 700; cursor: pointer; transition: all .3s ease;
+            overflow: visible; outline: none;
+        }
+        .start-btn::before {
+            content: ''; position: absolute; inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--accent), transparent 40%, var(--accent) 60%, transparent);
+            animation: btnSpin 3s linear infinite; z-index: -1;
+            opacity: 0; transition: opacity .3s;
+        }
+        .start-btn:hover::before, .start-btn.testing::before { opacity: 1; }
+        .start-btn:hover {
+            background: rgba(0,229,255,.14);
+            box-shadow: 0 0 45px rgba(0,229,255,.25);
+            transform: scale(1.06);
+        }
+        .start-btn.testing {
+            border-color: #ff3366; color: #ff3366;
+            background: rgba(255,51,102,.07); cursor: pointer;
+        }
+        .start-btn.testing::before {
+            background: conic-gradient(from 0deg, #ff3366, transparent 40%, #ff3366 60%, transparent);
+        }
+        .start-btn.testing:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(255,51,102,.2);
+        }
+        @keyframes btnSpin { to { transform: rotate(360deg); } }
+        .start-btn:not(.testing) { animation: pulse 2.5s ease-in-out infinite; }
+        @keyframes pulse {
+            0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,.35)}
+            50%{box-shadow:0 0 0 22px rgba(0,229,255,0)}
+        }
+
+        .result-card {
+            opacity: 0; transform: translateY(18px);
+            transition: all .5s cubic-bezier(.22,1,.36,1);
+        }
+        .result-card.visible { opacity: 1; transform: translateY(0); }
+        .result-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem; font-weight: 800; line-height: 1;
+            transition: transform .3s ease;
+        }
+        .result-card.visible .result-value {
+            animation: popIn .4s ease;
+        }
+        @keyframes popIn {
+            0%{transform:scale(.7);opacity:0}
+            60%{transform:scale(1.08)}
+            100%{transform:scale(1);opacity:1}
+        }
+
+        .info-skeleton {
+            background: linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: 6px; height: 20px; width: 75%;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        .speed-rating {
+            display: inline-block; padding: 5px 20px;
+            border-radius: 20px; font-weight: 700; font-size: 15px;
+            animation: popIn .5s ease;
+        }
+        .rating-excellent { background:rgba(0,255,136,.12); color:#00ff88; border:1px solid rgba(0,255,136,.25); }
+        .rating-vgood { background:rgba(0,229,255,.12); color:#00e5ff; border:1px solid rgba(0,229,255,.25); }
+        .rating-good { background:rgba(0,229,255,.12); color:#00e5ff; border:1px solid rgba(0,229,255,.25); }
+        .rating-fair { background:rgba(255,170,0,.12); color:#ffaa00; border:1px solid rgba(255,170,0,.25); }
+        .rating-poor { background:rgba(255,51,102,.12); color:#ff3366; border:1px solid rgba(255,51,102,.25); }
+
+        .phase-ind { display:flex; gap:10px; justify-content:center; margin-top:14px; }
+        .phase-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,.08); transition: all .35s ease;
+        }
+        .phase-dot.active {
+            background: var(--accent); box-shadow: 0 0 12px var(--accent);
+            transform: scale(1.3);
+        }
+        .phase-dot.done { background: var(--accent2); }
+
+        .toast {
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 12px 28px; border-radius: 14px;
+            background: rgba(10,16,32,.92); backdrop-filter: blur(16px);
+            border: 1px solid var(--border); color: var(--fg);
+            font-size: 14px; z-index: 1000;
+            transition: transform .4s cubic-bezier(.22,1,.36,1);
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .history-row { transition: background .2s; }
+        .history-row:hover { background: rgba(0,229,255,.04); }
+
+        /* === تذييل مطوّر الفريق === */
+        .dev-footer {
+            border-top: 1px solid var(--border);
+            background: linear-gradient(180deg, transparent 0%, rgba(0,229,255,.02) 100%);
+        }
+        .dev-logo {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(0,229,255,.2);
+            box-shadow: 0 0 25px rgba(0,229,255,.1);
+            transition: all .4s ease;
+        }
+        .dev-logo:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px rgba(0,229,255,.25);
+            transform: scale(1.08);
+        }
+        .team-name {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+        .dev-line {
+            width: 50px; height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 2px;
+            margin: 0 auto;
+        }
+
+        @media(max-width:768px) {
+            .result-value { font-size: 1.4rem; }
+            .start-btn { width: 110px; height: 110px; font-size: 15px; }
+            .dev-logo { width: 64px; height: 64px; }
+            .team-name { font-size: 1.05rem; }
+        }
+        @media(prefers-reduced-motion:reduce) {
+            *,*::before,*::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grid"></div>
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+
+    <div class="content">
+        <header class="text-center pt-8 pb-2 px-4">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <i class="fas fa-bolt text-2xl" style="color:var(--accent)"></i>
+                <h1 class="text-3xl md:text-4xl font-black tracking-wide" style="font-family:'Orbitron',sans-serif;color:var(--accent)">
+                    SpeedPulse
+                </h1>
+            </div>
+            <p class="text-sm" style="color:var(--muted)">فحص دقيق لسرعة الإنترنت عبر خوادم Cloudflare العالمية</p>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 pb-16">
+            <!-- المقياس -->
+            <section class="flex flex-col items-center mb-8" aria-label="مقياس السرعة">
+                <div class="relative" style="width:370px;height:370px;max-width:88vw;max-height:88vw">
+                    <canvas id="gaugeCanvas" style="width:100%;height:100%"></canvas>
+                </div>
+                <div class="relative -mt-14 mb-3">
+                    <button id="startBtn" class="start-btn" aria-label="بدء اختبار السرعة">
+                        <span id="btnText">ابدأ<br>الاختبار</span>
+                    </button>
+                </div>
+                <div class="phase-ind" id="phaseIndicator">
+                    <div class="phase-dot" id="phasePing" title="البينق"></div>
+                    <div class="phase-dot" id="phaseDownload" title="التحميل"></div>
+                    <div class="phase-dot" id="phaseUpload" title="الرفع"></div>
+                </div>
+                <p id="phaseText" class="text-xs mt-2" style="color:var(--muted)">اضغط لبدء اختبار السرعة</p>
+                <p class="text-xs mt-1" style="color:rgba(255,255,255,.2)"><i class="fas fa-server ml-1"></i>Cloudflare Edge Network</p>
+            </section>
+
+            <!-- النتائج -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="resultsSection" aria-label="نتائج الاختبار">
+                <div class="glass-card result-card p-5 text-center">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <i class="fas fa-arrow-down text-sm" style="color:var(--accent)"></i>
+                        <span class="text-xs font-medium" style="color:var(--muted)">التحميل</span>
+                    </div>
+                    <div class="result-value" style="color:var(--accent)" id="downloadValue">--</div>
+                    <div class="text-xs mt-1" style="color:var(--muted)">Mbps</div>
+                </div>
+                <div class="glass-card result-card p-5 text-center">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <i class="fas fa-arrow-up text-sm" style="color:var(--accent2)"></i>
+                        <span class="text-xs font-medium" style="color:var(--muted)">الرفع</span>
+                    </div>
+                    <div class="result-value" style="color:var(--accent2)" id="uploadValue">--</div>
+                    <div class="text-xs mt-1" style="color:var(--muted)">Mbps</div>
+                </div>
+                <div class="glass-card result-card p-5 text-center">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <i class="fas fa-signal text-sm" style="color:#ffaa00"></i>
+                        <span class="text-xs font-medium" style="color:var(--muted)">البينق</span>
+                    </div>
+                    <div class="result-value" style="color:#ffaa00" id="pingValue">--</div>
+                    <div class="text-xs mt-1" style="color:var(--muted)">ms</div>
+                </div>
+                <div class="glass-card result-card p-5 text-center">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <i class="fas fa-wave-square text-sm" style="color:#c084fc"></i>
+                        <span class="text-xs font-medium" style="color:var(--muted)">الاهتزاز</span>
+                    </div>
+                    <div class="result-value" style="color:#c084fc" id="jitterValue">--</div>
+                    <div class="text-xs mt-1" style="color:var(--muted)">ms</div>
+                </div>
+            </section>
+
+            <!-- التقييم -->
+            <div class="text-center mb-10" id="ratingSection" style="display:none">
+                <span class="speed-rating" id="speedRating"></span>
+            </div>
+
+            <!-- معلومات الشبكة -->
+            <section class="mb-10" aria-label="معلومات الشبكة">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-globe text-sm" style="color:var(--accent)"></i>
+                        معلومات الشبكة
+                    </h2>
+                    <button id="refreshIpBtn" class="text-xs px-3 py-1.5 rounded-lg transition-all" style="color:var(--muted);border:1px solid var(--border)" aria-label="تحديث معلومات IP">
+                        <i class="fas fa-rotate-right ml-1"></i>تحديث
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="ipInfoGrid"></div>
+            </section>
+
+            <!-- سجل الاختبارات -->
+            <section id="historySection" style="display:none" aria-label="سجل الاختبارات">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-clock-rotate-left text-sm" style="color:var(--accent)"></i>
+                    سجل الاختبارات
+                </h2>
+                <div class="glass-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border)">
+                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">الوقت</th>
+                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">التحميل</th>
+                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">الرفع</th>
+                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">البينق</th>
+                                    <th class="p-3 text-right font-medium" style="color:var(--muted)">التقييم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- تذييل فريق UROXA -->
+        <footer class="dev-footer py-12 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <!-- الفاصل الزخرفي -->
+                <div class="dev-line mb-8"></div>
+
+                <!-- الشعار + النص -->
+                <div class="flex flex-col items-center gap-4">
+                    <img
+                        src="https://z-cdn-media.chatglm.cn/files/4a5a1acc-4459-473a-a9d7-b91606f2fe3b.jpg?auth_key=1884036940-78aa7067aa454a69a888c80531e7f98f-0-3738059815a1ce905b5c3a6e6d92999a"
+                        alt="UROXA Logo"
+                        class="dev-logo"
+                    >
+                    <div>
+                        <p class="text-sm mb-2" style="color:var(--muted)">تم التطوير من قبل</p>
+                        <span class="team-name">UROXA</span>
+                    </div>
+                </div>
+
+                <!-- الفاصل الزخرفي السفلي -->
+                <div class="dev-line mt-8 mb-4"></div>
+
+                <p class="text-xs" style="color:rgba(255,255,255,.18)">
+                    SpeedPulse &mdash; فحص سرعة الإنترنت عبر شبكة Cloudflare العالمية
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+    function lerpColor(c1, c2, t) {
+        const r1=parseInt(c1.slice(1,3),16), g1=parseInt(c1.slice(3,5),16), b1=parseInt(c1.slice(5,7),16);
+        const r2=parseInt(c2.slice(1,3),16), g2=parseInt(c2.slice(3,5),16), b2=parseInt(c2.slice(5,7),16);
+        return `rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
+    }
+
+    function showToast(msg, dur=3000) {
+        const t = document.createElement('div');
+        t.className = 'toast'; t.textContent = msg;
+        document.body.appendChild(t);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+        setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, dur);
+    }
+
+    function getSpeedRating(mbps) {
+        if(mbps>=100) return {text:'ممتاز',cls:'rating-excellent'};
+        if(mbps>=50)  return {text:'جيد جداً',cls:'rating-vgood'};
+        if(mbps>=25)  return {text:'جيد',cls:'rating-good'};
+        if(mbps>=10)  return {text:'مقبول',cls:'rating-fair'};
+        return {text:'ضعيف',cls:'rating-poor'};
+    }
+
+    function getNiceMax(speed) {
+        const tiers=[50,100,200,500,1000,2000,5000];
+        for(const t of tiers) if(speed < t*0.82) return t;
+        return 5000;
+    }
+
+    class ParticleBG {
+        constructor(cvs) {
+            this.cvs=cvs; this.ctx=cvs.getContext('2d');
+            this.pts=[]; this.on=true;
+            this._resize(); window.addEventListener('resize',()=>this._resize());
+            this._init(); this._loop();
+        }
+        _resize() { this.cvs.width=window.innerWidth; this.cvs.height=window.innerHeight; }
+        _init() {
+            this.pts=[];
+            const n=Math.min(55,Math.floor(this.cvs.width*this.cvs.height/22000));
+            for(let i=0;i<n;i++) this.pts.push({
+                x:Math.rando
