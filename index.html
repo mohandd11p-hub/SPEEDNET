@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص سرعة الإنترنت</title>
+    <title>SpeedPulse - الفحص المستقر</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,27 +32,30 @@
         }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
-        .fast-number {
+        /* الرقم التفاعلي */
+        .live-number {
             font-size: clamp(4.5rem, 16vw, 7rem);
             line-height: 1;
             font-weight: 900;
             color: var(--cyan);
-            text-shadow: 0 0 25px rgba(0, 229, 255, 0.35);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            transition: color 0.2s ease;
+        }
+        
+        .live-number.pulse {
+            animation: glowPulse 0.8s infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            from { text-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+            to { text-shadow: 0 0 30px rgba(0, 229, 255, 0.8); }
         }
 
         .glass-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: 12px;
         }
-
-        .reload-btn {
-            border: 2px solid var(--cyan);
-            color: var(--cyan);
-            background: rgba(0, 229, 255, 0.1);
-            transition: all 0.2s ease;
-        }
-        .reload-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="relative z-10 min-h-screen p-4 flex flex-col justify-between max-w-xl mx-auto w-full">
@@ -63,7 +66,7 @@
             <h1 class="text-2xl font-black text-cyan-400 orbitron">SpeedPulse</h1>
             <i class="fas fa-bolt text-cyan-400"></i>
         </div>
-        <button onclick="restartSpeedTest()" class="reload-btn w-10 h-10 rounded-full flex items-center justify-center text-lg">
+        <button onclick="startTestEngine()" class="w-10 h-10 rounded-full border-2 border-cyan-400 text-cyan-400 bg-cyan-900/20 flex items-center justify-center active:scale-90 transition-transform">
             <i class="fas fa-rotate-right" id="reloadIcon"></i>
         </button>
     </header>
@@ -72,50 +75,13 @@
         <p class="text-xs text-slate-400 mb-2 font-bold tracking-widest uppercase">سرعة التنزيل الحالية</p>
         
         <div class="flex items-baseline justify-center gap-2 my-2">
-            <span id="speedVal" class="fast-number orbitron">0.0</span>
+            <span id="speedVal" class="live-number orbitron">0.0</span>
             <div class="text-right">
                 <span class="block text-xl font-extrabold text-cyan-400 orbitron">Mbps</span>
-                <span id="statusBadge" class="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">جاري الإعداد...</span>
+                <span id="statusBadge" class="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">في الانتظار</span>
             </div>
         </div>
 
         <div class="w-full max-w-xs bg-slate-900 rounded-full h-2 mt-4 mb-8 overflow-hidden border border-slate-800">
-            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-150"></div>
+            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-75"></div>
         </div>
-
-        <div class="grid grid-cols-3 gap-3 w-full">
-            <div class="glass-card p-3 text-center">
-                <div class="text-[11px] text-slate-400 mb-1"><i class="fas fa-arrow-up text-emerald-400 ml-1"></i>الرفع</div>
-                <div id="ulVal" class="text-lg font-bold text-emerald-400 orbitron">--</div>
-                <div class="text-[9px] text-slate-500">Mbps</div>
-            </div>
-            <div class="glass-card p-3 text-center">
-                <div class="text-[11px] text-slate-400 mb-1"><i class="fas fa-stopwatch text-amber-400 ml-1"></i>البينغ</div>
-                <div id="pingVal" class="text-lg font-bold text-amber-400 orbitron">--</div>
-                <div class="text-[9px] text-slate-500">ms</div>
-            </div>
-            <div class="glass-card p-3 text-center">
-                <div class="text-[11px] text-slate-400 mb-1"><i class="fas fa-wave-square text-purple-400 ml-1"></i>الاهتزاز</div>
-                <div id="jitterVal" class="text-lg font-bold text-purple-400 orbitron">--</div>
-                <div class="text-[9px] text-slate-500">ms</div>
-            </div>
-        </div>
-
-        <div class="glass-card p-3 w-full mt-4 text-xs text-right space-y-1">
-            <div class="flex justify-between items-center text-slate-400">
-                <span>المزود (ISP):</span>
-                <span id="ispVal" class="text-slate-200 font-bold">جاري الجلب...</span>
-            </div>
-            <div class="flex justify-between items-center text-slate-400">
-                <span>العنوان (IP):</span>
-                <span id="ipVal" class="text-slate-200 font-mono">--</span>
-            </div>
-        </div>
-    </main>
-
-    <footer class="py-3 text-center flex flex-col items-center justify-center gap-1.5 border-t border-slate-800/80">
-        <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1 shadow-[0_0_12px_rgba(0,229,255,0.2)]">
-            <svg viewBox="0 0 200 200" class="w-full h-full">
-                <circle cx="100" cy="100" r="95" fill="none" stroke="#e2e8f0" stroke-width="4"/>
-                <path d="M 60,110 C 50,60 120,40 140,70 C 160,100 120,130 90,140" fill="none" stroke="#0088cc" stroke-width="16" stroke-linecap="round"/>
-                <path d="M 85,75 L 145,135 M 145,135 L 120,1
