@@ -26,6 +26,7 @@
             background: var(--bg);
             color: var(--fg);
             min-height: 100vh;
+            overflow-y: auto;
             overflow-x: hidden;
         }
 
@@ -132,22 +133,14 @@
 
         /* === النتائج === */
         .result-card {
-            opacity: 0; transform: translateY(18px);
+            opacity: 1; /* تم تعديلها لتظهر فور تحميل الصفحة */
+            transform: translateY(0);
             transition: all .5s cubic-bezier(.22,1,.36,1);
         }
-        .result-card.visible { opacity: 1; transform: translateY(0); }
         .result-value {
             font-family: 'Orbitron', sans-serif;
             font-size: 2rem; font-weight: 800; line-height: 1;
             transition: transform .3s ease;
-        }
-        .result-card.visible .result-value {
-            animation: popIn .4s ease;
-        }
-        @keyframes popIn {
-            0%{transform:scale(.7);opacity:0}
-            60%{transform:scale(1.08)}
-            100%{transform:scale(1);opacity:1}
         }
 
         /* === هيكل IP === */
@@ -163,7 +156,6 @@
         .speed-rating {
             display: inline-block; padding: 5px 20px;
             border-radius: 20px; font-weight: 700; font-size: 15px;
-            animation: popIn .5s ease;
         }
         .rating-excellent { background:rgba(0,255,136,.12); color:#00ff88; border:1px solid rgba(0,255,136,.25); }
         .rating-vgood { background:rgba(0,229,255,.12); color:#00e5ff; border:1px solid rgba(0,229,255,.25); }
@@ -205,12 +197,6 @@
             .result-value { font-size: 1.4rem; }
             .start-btn { width: 110px; height: 110px; font-size: 15px; }
         }
-        @media(prefers-reduced-motion:reduce) {
-            *,*::before,*::after {
-                animation-duration: .01ms !important;
-                transition-duration: .01ms !important;
-            }
-        }
     </style>
 </head>
 <body>
@@ -250,6 +236,7 @@
                 <p class="text-xs mt-1" style="color:rgba(255,255,255,.2)"><i class="fas fa-server ml-1"></i>Cloudflare Edge Network (Direct International)</p>
             </section>
 
+            <!-- كروت النتائج تظهر الآن بشكل دائم وقابل للمشاهدة والتمرير لأسفل -->
             <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="resultsSection" aria-label="نتائج الاختبار">
                 <div class="glass-card result-card p-5 text-center">
                     <div class="flex items-center justify-center gap-2 mb-3">
@@ -289,7 +276,8 @@
                 <span class="speed-rating" id="speedRating"></span>
             </div>
 
-            <section class="mb-10" aria-label="معلومات الشبكة">
+            <!-- قسم معلومات الشبكة -->
+            <section class="mb-10 animate-fade" aria-label="معلومات الشبكة">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold flex items-center gap-2">
                         <i class="fas fa-globe text-sm" style="color:var(--accent)"></i>
@@ -302,6 +290,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="ipInfoGrid"></div>
             </section>
 
+            <!-- سجل الاختبارات -->
             <section id="historySection" style="display:none" aria-label="سجل الاختبارات">
                 <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
                     <i class="fas fa-clock-rotate-left text-sm" style="color:var(--accent)"></i>
@@ -409,11 +398,15 @@
             this.dpr=window.devicePixelRatio||1;
             this._resize();
             this._animate();
+            window.addEventListener('resize', () => this._resize());
         }
         _resize() {
             const rect=this.cvs.getBoundingClientRect();
-            this.cvs.width=rect.width*this.dpr;
-            this.cvs.height=rect.height*this.dpr;
+            // إصلاح مشكلة قراءة الـ 0 بكسل أثناء تحميل الصفحة على الموبايل
+            if (rect.width > 0 && rect.height > 0) {
+                this.cvs.width=rect.width*this.dpr;
+                this.cvs.height=rect.height*this.dpr;
+            }
         }
         setValue(v, max) {
             this.targetVal=v;
@@ -421,11 +414,14 @@
         }
         _animate() {
             this.val += (this.targetVal - this.val) * 0.12;
+            this._resize(); // للتأكيد المستمر على أخذ الأبعاد فور استقرار الصفحة
             this.draw();
             requestAnimationFrame(()=>this._animate());
         }
         draw() {
             const c=this.ctx, w=this.cvs.width, h=this.cvs.height;
+            if (w === 0 || h === 0) return; // منع الرسم لحين اكتمال أبعاد الصفحة
+            
             const cx=w/2, cy=h/2, r=Math.min(w,h)*0.38;
             c.clearRect(0,0,w,h);
 
@@ -499,4 +495,221 @@
         }
     }
 
-    class
+    class SpeedEngine {
+        constructor(gauge) {
+            this.gauge = gauge;
+            this.testing = false;
+            this.abortCtrl = null;
+        }
+
+        async start() {
+            if(this.testing) { this.stop(); return; }
+            this.testing = true;
+            this.abortCtrl = new AbortController();
+
+            this.updateUIStart();
+
+            try {
+                const pingData = await this.measurePing();
+                document.getElementById('pingValue').textContent = pingData.ping;
+                document.getElementById('jitterValue').textContent = pingData.jitter;
+                this.setPhase('ping', 'done');
+
+                this.setPhase('download', 'active');
+                document.getElementById('phaseText').textContent = 'جاري فحص سرعة التحميل الفعلية...';
+                const dlSpeed = await this.measureDownload();
+                document.getElementById('downloadValue').textContent = dlSpeed.toFixed(1);
+                this.setPhase('download', 'done');
+
+                this.setPhase('upload', 'active');
+                document.getElementById('phaseText').textContent = 'جاري فحص سرعة الرفع...';
+                const ulSpeed = await this.measureUpload();
+                document.getElementById('uploadValue').textContent = ulSpeed.toFixed(1);
+                this.setPhase('upload', 'done');
+
+                this.finishTest(dlSpeed, ulSpeed, pingData.ping);
+
+            } catch(err) {
+                if(err.name !== 'AbortError') {
+                    showToast('حدث خطأ أثناء فحص الاتصال');
+                }
+                this.resetUI();
+            }
+        }
+
+        stop() {
+            if(this.abortCtrl) this.abortCtrl.abort();
+            this.testing = false;
+            this.resetUI();
+            showToast('تم إلغاء الاختبار');
+        }
+
+        updateUIStart() {
+            const btn = document.getElementById('startBtn');
+            btn.classList.add('testing');
+            document.getElementById('btnText').innerHTML = 'إلغاء';
+            document.querySelectorAll('.result-value').forEach(v => v.textContent = '--');
+            document.getElementById('ratingSection').style.display = 'none';
+            this.setPhase('ping', 'active');
+            document.getElementById('phaseText').textContent = 'جاري فحص زمن الاستجابة (Ping)...';
+        }
+
+        setPhase(phase, status) {
+            const el = document.getElementById(`phase${phase.charAt(0).toUpperCase() + phase.slice(1)}`);
+            if(!el) return;
+            el.className = 'phase-dot ' + status;
+        }
+
+        resetUI() {
+            const btn = document.getElementById('startBtn');
+            btn.classList.remove('testing');
+            document.getElementById('btnText').innerHTML = 'ابدأ<br>الاختبار';
+            document.getElementById('phaseText').textContent = 'اضغط لبدء اختبار السرعة';
+            document.querySelectorAll('.phase-dot').forEach(d => d.className = 'phase-dot');
+            this.gauge.setValue(0, 100);
+            this.testing = false;
+        }
+
+        async measurePing() {
+            const pings = [];
+            for(let i=0; i<6; i++) {
+                if(!this.testing) throw new Error('Abort');
+                const start = performance.now();
+                const antiCache = `nocache=${Date.now()}_${Math.random()}`;
+                await fetch(`https://speed.cloudflare.com/__down?bytes=0&${antiCache}`, {
+                    cache: 'no-store',
+                    signal: this.abortCtrl.signal
+                });
+                const end = performance.now();
+                if(i > 0) pings.push(end - start);
+                await new Promise(r => setTimeout(r, 80));
+            }
+            const avgPing = Math.round(pings.reduce((a,b)=>a+b, 0) / pings.length);
+            let jitterSum = 0;
+            for(let i=1; i<pings.length; i++) jitterSum += Math.abs(pings[i] - pings[i-1]);
+            const jitter = Math.round(jitterSum / (pings.length - 1)) || 1;
+            return { ping: avgPing, jitter };
+        }
+
+        async measureDownload() {
+            const duration = 7000;
+            const startTime = performance.now();
+            let totalBytes = 0;
+            const streams = 4;
+
+            const runWorker = async () => {
+                while(performance.now() - startTime < duration && this.testing) {
+                    const antiCache = `nocache=${Date.now()}_${Math.random()}`;
+                    const res = await fetch(`https://speed.cloudflare.com/__down?bytes=25000000&${antiCache}`, {
+                        cache: 'no-store',
+                        signal: this.abortCtrl.signal
+                    });
+                    const reader = res.body.getReader();
+                    while(true) {
+                        const { done, value } = await reader.read();
+                        if(done) break;
+                        totalBytes += value.length;
+                        
+                        const elapsed = (performance.now() - startTime) / 1000;
+                        if(elapsed > 0.5) {
+                            const mbps = (totalBytes * 8) / (elapsed * 1024 * 1024);
+                            this.gauge.setValue(mbps, getNiceMax(mbps));
+                            document.getElementById('downloadValue').textContent = mbps.toFixed(1);
+                        }
+                        if(performance.now() - startTime >= duration || !this.testing) {
+                            reader.cancel();
+                            break;
+                        }
+                    }
+                }
+            };
+
+            await Promise.all(Array(streams).fill(0).map(()=>runWorker()));
+            const finalElapsed = (performance.now() - startTime) / 1000;
+            return (totalBytes * 8) / (finalElapsed * 1024 * 1024);
+        }
+
+        async measureUpload() {
+            const duration = 5000;
+            const startTime = performance.now();
+            let totalBytes = 0;
+            const payload = new Uint8Array(1024 * 512);
+            crypto.getRandomValues(payload);
+
+            while(performance.now() - startTime < duration && this.testing) {
+                const antiCache = `nocache=${Date.now()}_${Math.random()}`;
+                await fetch(`https://speed.cloudflare.com/__up?${antiCache}`, {
+                    method: 'POST',
+                    body: payload,
+                    cache: 'no-store',
+                    signal: this.abortCtrl.signal
+                });
+                totalBytes += payload.length;
+                const elapsed = (performance.now() - startTime) / 1000;
+                const mbps = (totalBytes * 8) / (elapsed * 1024 * 1024);
+                this.gauge.setValue(mbps, getNiceMax(mbps));
+                document.getElementById('uploadValue').textContent = mbps.toFixed(1);
+            }
+
+            const finalElapsed = (performance.now() - startTime) / 1000;
+            return (totalBytes * 8) / (finalElapsed * 1024 * 1024);
+        }
+
+        finishTest(dl, ul, ping) {
+            this.resetUI();
+            const rating = getSpeedRating(dl);
+            const rEl = document.getElementById('speedRating');
+            rEl.textContent = `تقييم الاتصال: ${rating.text}`;
+            rEl.className = `speed-rating ${rating.cls}`;
+            document.getElementById('ratingSection').style.display = 'block';
+
+            this.saveHistory(dl, ul, ping, rating.text);
+            showToast('تم اكتمال اختبار السرعة بنجاح!');
+        }
+
+        saveHistory(dl, ul, ping, rating) {
+            const history = JSON.parse(localStorage.getItem('sp_history') || '[]');
+            const record = {
+                time: new Date().toLocaleTimeString('ar-IQ', {hour:'2-digit', minute:'2-digit'}),
+                dl: dl.toFixed(1),
+                ul: ul.toFixed(1),
+                ping: ping,
+                rating: rating
+            };
+            history.unshift(record);
+            if(history.length > 5) history.pop();
+            localStorage.setItem('sp_history', JSON.stringify(history));
+            this.renderHistory();
+        }
+
+        renderHistory() {
+            const history = JSON.parse(localStorage.getItem('sp_history') || '[]');
+            if(history.length === 0) return;
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = history.map(h => `
+                <tr class="history-row" style="border-bottom:1px solid rgba(255,255,255,0.03)">
+                    <td class="p-3">${h.time}</td>
+                    <td class="p-3 font-bold text-cyan-400">${h.dl} Mbps</td>
+                    <td class="p-3 text-emerald-400">${h.ul} Mbps</td>
+                    <td class="p-3 text-amber-400">${h.ping} ms</td>
+                    <td class="p-3">${h.rating}</td>
+                </tr>
+            `).join('');
+            document.getElementById('historySection').style.display = 'block';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        new ParticleBG(document.getElementById('particleCanvas'));
+        const gauge = new SpeedGauge(document.getElementById('gaugeCanvas'));
+        const engine = new SpeedEngine(gauge);
+
+        document.getElementById('startBtn').addEventListener('click', () => engine.start());
+        document.getElementById('refreshIpBtn').addEventListener('click', () => NetworkInfo.fetchInfo());
+
+        NetworkInfo.fetchInfo();
+        engine.renderHistory();
+    });
+    </script>
+</body>
+</html>
