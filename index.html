@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص سرعة الإنترنت</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <title>SpeedPulse - فحص السرعة السريع</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --bg: #050a15;
-            --card-bg: rgba(12, 22, 45, 0.75);
+            --card-bg: rgba(12, 22, 45, 0.7);
             --border: rgba(0, 229, 255, 0.2);
             --cyan: #00e5ff;
             --green: #00ff88;
-            --text-muted: #64748b;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -30,8 +29,20 @@
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background-image: linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-size: 35px 35px;
         }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        /* نمط الرقم الضخم مثل Fast */
+        .fast-speed-number {
+            font-size: clamp(4.5rem, 18vw, 7.5rem);
+            line-height: 1;
+            font-weight: 900;
+            background: linear-gradient(180deg, #ffffff 30%, #00e5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         .glass-card {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
@@ -39,101 +50,79 @@
             border: 1px solid var(--border);
             border-radius: 14px;
         }
-        .start-btn {
-            width: 130px; height: 130px; border-radius: 50%;
-            border: 3px solid var(--cyan);
-            background: radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(5,10,21,0.8) 100%);
-            color: var(--cyan); font-size: 17px; font-weight: 800;
-            cursor: pointer; transition: all .3s ease; outline: none;
-            box-shadow: 0 0 25px rgba(0,229,255,0.25);
-            display: flex; align-items: center; justify-content: center; text-align: center;
+
+        .reload-btn {
+            border: 2px solid var(--cyan);
+            color: var(--cyan);
+            background: rgba(0, 229, 255, 0.08);
+            transition: all 0.2s ease;
         }
-        .start-btn:active { transform: scale(0.95); }
-        .start-btn.testing {
-            border-color: #ff3366; color: #ff3366;
-            background: radial-gradient(circle, rgba(255,51,102,0.15) 0%, rgba(5,10,21,0.8) 100%);
-            box-shadow: 0 0 25px rgba(255,51,102,0.3);
+        .reload-btn:active {
+            transform: scale(0.92);
+            background: rgba(0, 229, 255, 0.2);
         }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
     </style>
 </head>
-<body class="relative z-10 min-h-screen p-4 flex flex-col justify-between max-w-2xl mx-auto w-full">
+<body class="relative z-10 min-h-screen p-4 flex flex-col justify-between max-w-xl mx-auto w-full">
     <div class="bg-grid"></div>
 
-    <header class="text-center pt-2 pb-4">
-        <div class="flex items-center justify-center gap-2 mb-1">
-            <h1 class="text-3xl font-black text-cyan-400 orbitron tracking-wider">SpeedPulse</h1>
-            <i class="fas fa-bolt text-cyan-400 text-xl"></i>
+    <header class="flex items-center justify-between pt-2 pb-4">
+        <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-black text-cyan-400 orbitron tracking-wider">SpeedPulse</h1>
+            <i class="fas fa-bolt text-cyan-400 text-lg"></i>
         </div>
-        <p class="text-xs text-slate-400">فحص دقيق لسرعة الإنترنت الحقيقية بدون كاش محلي</p>
+        <button onclick="restartTest()" class="reload-btn w-10 h-10 rounded-full flex items-center justify-center text-lg">
+            <i class="fas fa-rotate-right" id="reloadIcon"></i>
+        </button>
     </header>
 
-    <main class="my-auto flex flex-col items-center">
-        <div class="relative w-64 h-64 flex items-center justify-center my-2">
-            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="transparent" />
-                <circle id="gaugeArc" cx="50" cy="50" r="42" stroke="url(#cyanGrad)" stroke-width="5" 
-                        stroke-dasharray="263.89" stroke-dashoffset="263.89" stroke-linecap="round" fill="transparent" 
-                        style="transition: stroke-dashoffset 0.12s linear;" />
-                <defs>
-                    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#00e5ff" />
-                        <stop offset="100%" stop-color="#00ff88" />
-                    </linearGradient>
-                </defs>
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <span id="speedDisplay" class="text-4xl font-black text-cyan-400 orbitron">0.0</span>
-                <span class="text-xs text-slate-400 font-bold mt-1">Mbps</span>
+    <main class="my-auto flex flex-col items-center justify-center text-center py-6">
+        <p class="text-xs text-slate-400 mb-2 font-bold tracking-widest uppercase">سرعة التنزيل الحالية</p>
+        
+        <div class="flex items-baseline justify-center gap-2 my-2">
+            <span id="speedVal" class="fast-speed-number orbitron">0.0</span>
+            <div class="text-right">
+                <span class="block text-xl font-extrabold text-cyan-400 orbitron">Mbps</span>
+                <span id="statusBadge" class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">جاري القياس...</span>
             </div>
         </div>
 
-        <div class="-mt-8 mb-4">
-            <button id="mainBtn" class="start-btn" onclick="handleTestToggle()">
-                <span id="btnLabel">ابدأ<br>الاختبار</span>
-            </button>
+        <div class="w-full max-w-xs bg-slate-900/80 rounded-full h-1.5 mt-4 mb-8 overflow-hidden border border-slate-800">
+            <div id="progressBar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-0 transition-all duration-150"></div>
         </div>
 
-        <p id="statusMsg" class="text-xs text-slate-400 mb-6 font-medium">اضغط ابدأ لبدء الفحص</p>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mb-6">
+        <div class="grid grid-cols-3 gap-3 w-full">
             <div class="glass-card p-3 text-center">
-                <div class="text-xs text-slate-400 mb-1"><i class="fas fa-arrow-down text-cyan-400 ml-1"></i>التحميل</div>
-                <div id="dlResult" class="text-xl font-bold text-cyan-400 orbitron">--</div>
-                <div class="text-[10px] text-slate-500">Mbps</div>
+                <div class="text-[11px] text-slate-400 mb-1"><i class="fas fa-arrow-up text-emerald-400 ml-1"></i>الرفع</div>
+                <div id="ulVal" class="text-lg font-bold text-emerald-400 orbitron">--</div>
+                <div class="text-[9px] text-slate-500">Mbps</div>
             </div>
             <div class="glass-card p-3 text-center">
-                <div class="text-xs text-slate-400 mb-1"><i class="fas fa-arrow-up text-emerald-400 ml-1"></i>الرفع</div>
-                <div id="ulResult" class="text-xl font-bold text-emerald-400 orbitron">--</div>
-                <div class="text-[10px] text-slate-500">Mbps</div>
+                <div class="text-[11px] text-slate-400 mb-1"><i class="fas fa-stopwatch text-amber-400 ml-1"></i>البينغ</div>
+                <div id="pingVal" class="text-lg font-bold text-amber-400 orbitron">--</div>
+                <div class="text-[9px] text-slate-500">ms</div>
             </div>
             <div class="glass-card p-3 text-center">
-                <div class="text-xs text-slate-400 mb-1"><i class="fas fa-stopwatch text-amber-400 ml-1"></i>البينغ</div>
-                <div id="pingResult" class="text-xl font-bold text-amber-400 orbitron">--</div>
-                <div class="text-[10px] text-slate-500">ms</div>
-            </div>
-            <div class="glass-card p-3 text-center">
-                <div class="text-xs text-slate-400 mb-1"><i class="fas fa-wave-square text-purple-400 ml-1"></i>الاهتزاز</div>
-                <div id="jitterResult" class="text-xl font-bold text-purple-400 orbitron">--</div>
-                <div class="text-[10px] text-slate-500">ms</div>
+                <div class="text-[11px] text-slate-400 mb-1"><i class="fas fa-wave-square text-purple-400 ml-1"></i>الاهتزاز</div>
+                <div id="jitterVal" class="text-lg font-bold text-purple-400 orbitron">--</div>
+                <div class="text-[9px] text-slate-500">ms</div>
             </div>
         </div>
 
-        <div class="glass-card p-4 w-full text-xs space-y-2">
-            <div class="text-cyan-400 font-bold mb-2 flex items-center gap-2 text-sm">
-                <i class="fas fa-network-wired"></i> تفاصيل الاتصال
+        <div class="glass-card p-3 w-full mt-4 text-xs text-right space-y-1">
+            <div class="flex justify-between items-center text-slate-400">
+                <span>المزود (ISP):</span>
+                <span id="ispVal" class="text-slate-200 font-bold">جاري الجلب...</span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div><span class="text-slate-400">عنوان IP:</span> <span id="ipVal" class="text-slate-200 font-mono">جاري التحميل...</span></div>
-                <div><span class="text-slate-400">المزود:</span> <span id="ispVal" class="text-slate-200">جاري التحميل...</span></div>
-                <div><span class="text-slate-400">البلد / المدينة:</span> <span id="locVal" class="text-slate-200">جاري التحميل...</span></div>
-                <div><span class="text-slate-400">نوع الشبكة:</span> <span id="netTypeVal" class="text-slate-200">IPv4 / Cellular</span></div>
+            <div class="flex justify-between items-center text-slate-400">
+                <span>العنوان (IP):</span>
+                <span id="ipVal" class="text-slate-200 font-mono">--</span>
             </div>
         </div>
     </main>
 
-    <footer class="pt-6 pb-2 text-center flex flex-col items-center justify-center gap-2 border-t border-slate-800/80 mt-4">
-        <div class="w-12 h-12 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.2)] p-1">
+    <footer class="py-3 text-center flex flex-col items-center justify-center gap-1.5 border-t border-slate-800/80">
+        <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1 shadow-[0_0_12px_rgba(0,229,255,0.2)]">
             <svg viewBox="0 0 200 200" class="w-full h-full">
                 <circle cx="100" cy="100" r="95" fill="none" stroke="#e2e8f0" stroke-width="4"/>
                 <path d="M 60,110 C 50,60 120,40 140,70 C 160,100 120,130 90,140" fill="none" stroke="#0088cc" stroke-width="16" stroke-linecap="round"/>
@@ -141,199 +130,126 @@
                 <path d="M 70,120 C 80,150 120,160 150,145" fill="none" stroke="#00a8ff" stroke-width="12" stroke-linecap="round"/>
             </svg>
         </div>
-        <p class="text-xs font-bold text-cyan-400">تم التطوير من فريق UROXA</p>
+        <p class="text-[11px] font-bold text-cyan-400">تم التطوير من فريق UROXA</p>
     </footer>
 
     <script>
-        const CIRCUMFERENCE = 263.89;
-        let running = false;
-        let controller = null;
+        let abortCtrl = null;
+        let isRunning = false;
 
-        function setGauge(mbps, maxVal = 100) {
-            const display = document.getElementById('speedDisplay');
-            const arc = document.getElementById('gaugeArc');
-            if (display) display.innerText = mbps.toFixed(1);
-            
-            const ratio = Math.min(Math.max(mbps / maxVal, 0), 1);
-            const offset = CIRCUMFERENCE - (ratio * CIRCUMFERENCE);
-            if (arc) arc.style.strokeDashoffset = offset;
+        // بدء الفحص تلقائياً بمجرد فتح الصفحة (مثل Fast.com)
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchNetworkInfo();
+            startFastTest();
+        });
+
+        function restartTest() {
+            if (isRunning && abortCtrl) abortCtrl.abort();
+            const icon = document.getElementById('reloadIcon');
+            icon.classList.add('fa-spin');
+            setTimeout(() => icon.classList.remove('fa-spin'), 1000);
+            startFastTest();
         }
 
-        function handleTestToggle() {
-            if (running) {
-                stopSpeedTest();
-            } else {
-                startSpeedTest();
-            }
-        }
+        async function startFastTest() {
+            isRunning = true;
+            abortCtrl = new AbortController();
 
-        function stopSpeedTest() {
-            if (controller) controller.abort();
-            running = false;
-            updateUIState(false);
-            document.getElementById('statusMsg').innerText = 'تم إيقاف الفحص';
-        }
-
-        function updateUIState(active) {
-            const btn = document.getElementById('mainBtn');
-            const label = document.getElementById('btnLabel');
-            if (active) {
-                btn.classList.add('testing');
-                label.innerText = 'إلغاء';
-            } else {
-                btn.classList.remove('testing');
-                label.innerText = 'إعادة';
-                setGauge(0);
-            }
-        }
-
-        async function startSpeedTest() {
-            running = true;
-            controller = new AbortController();
-            updateUIState(true);
-
-            document.getElementById('dlResult').innerText = '--';
-            document.getElementById('ulResult').innerText = '--';
-            document.getElementById('pingResult').innerText = '--';
-            document.getElementById('jitterResult').innerText = '--';
+            // إعادة تعيين الواجهة
+            document.getElementById('speedVal').innerText = '0.0';
+            document.getElementById('ulVal').innerText = '--';
+            document.getElementById('pingVal').innerText = '--';
+            document.getElementById('jitterVal').innerText = '--';
+            document.getElementById('progressBar').style.width = '5%';
+            document.getElementById('statusBadge').innerText = 'جاري القياس...';
+            document.getElementById('statusBadge').className = 'text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30';
 
             try {
-                // 1. اختبار Ping & Jitter
-                document.getElementById('statusMsg').innerText = 'جاري قياس زمن الاستجابة (Ping)...';
-                const pData = await runPingTest();
-                document.getElementById('pingResult').innerText = pData.ping;
-                document.getElementById('jitterResult').innerText = pData.jitter;
+                // 1. فحص البينغ سريعاً
+                runPingFast();
 
-                if (!running) return;
+                // 2. فحص التنزيل التكيفي الموازي (نظام Fast)
+                document.getElementById('progressBar').style.width = '20%';
+                const finalDl = await runParallelDownloadFast();
+                document.getElementById('speedVal').innerText = finalDl.toFixed(1);
+                document.getElementById('progressBar').style.width = '70%';
 
-                // 2. اختبار التحميل (Download)
-                document.getElementById('statusMsg').innerText = 'جاري قياس سرعة التنزيل...';
-                const dlSpeed = await runDownloadTest();
-                document.getElementById('dlResult').innerText = dlSpeed.toFixed(1);
+                // 3. فحص الرفع
+                document.getElementById('statusBadge').innerText = 'فحص الرفع...';
+                const finalUl = await runUploadFast();
+                document.getElementById('ulVal').innerText = finalUl.toFixed(1);
 
-                if (!running) return;
-
-                // 3. اختبار الرفع (Upload)
-                document.getElementById('statusMsg').innerText = 'جاري قياس سرعة الرفع...';
-                const ulSpeed = await runUploadTest();
-                document.getElementById('ulResult').innerText = ulSpeed.toFixed(1);
-
-                document.getElementById('statusMsg').innerText = 'اكتمل فحص السرعة بنجاح!';
+                // إتمام الفحص
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('statusBadge').innerText = 'مكتمل';
+                document.getElementById('statusBadge').className = 'text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30';
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    document.getElementById('statusMsg').innerText = 'اكتمل الفحص جزئياً (تأكد من الاتصال)';
+                    document.getElementById('statusBadge').innerText = 'تم الاكتفاء';
                 }
             } finally {
-                running = false;
-                document.getElementById('mainBtn').classList.remove('testing');
-                document.getElementById('btnLabel').innerText = 'إعادة';
+                isRunning = false;
             }
         }
 
-        async function runPingTest() {
-            const samples = [];
-            for (let i = 0; i < 4; i++) {
-                if (!running) break;
-                const t0 = performance.now();
-                try {
-                    await fetch('https://speed.cloudflare.com/__down?bytes=0&r=' + Math.random(), {
-                        cache: 'no-store', signal: controller.signal
-                    });
-                    samples.push(performance.now() - t0);
-                } catch(e) {
-                    samples.push(45);
-                }
-                await new Promise(r => setTimeout(r, 70));
-            }
-            const avg = Math.round(samples.reduce((a,b)=>a+b, 0) / (samples.length || 1));
-            let jDiff = 0;
-            for (let i = 1; i < samples.length; i++) jDiff += Math.abs(samples[i] - samples[i-1]);
-            return { ping: avg || 30, jitter: Math.round(jDiff / (samples.length - 1)) || 3 };
-        }
-
-        async function runDownloadTest() {
-            const duration = 5000;
+        // خوارزمية جلب البيانات المتوازية (Fast Algorithm)
+        async function runParallelDownloadFast() {
+            const testDuration = 6000; // 6 ثوانٍ للفحص
             const startTime = performance.now();
             let totalBytes = 0;
+            
+            // أحجام الحزم المتدرجة (تزداد تلقائياً لملء الأنبوب)
+            const chunkSizes = [1000000, 5000000, 15000000, 25000000]; 
 
-            const fetchWorker = async () => {
-                while (performance.now() - startTime < duration && running) {
+            const worker = async (threadId) => {
+                let sizeIndex = 0;
+                while (performance.now() - startTime < testDuration && isRunning) {
+                    const bytesToFetch = chunkSizes[Math.min(sizeIndex, chunkSizes.length - 1)];
                     try {
-                        const res = await fetch(`https://speed.cloudflare.com/__down?bytes=4000000&r=${Math.random()}`, {
-                            cache: 'no-store', signal: controller.signal
+                        const res = await fetch(`https://speed.cloudflare.com/__down?bytes=${bytesToFetch}&r=${Math.random()}`, {
+                            cache: 'no-store',
+                            signal: abortCtrl.signal
                         });
+                        
                         const reader = res.body.getReader();
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) break;
                             totalBytes += value.length;
-                            const sec = (performance.now() - startTime) / 1000;
-                            if (sec > 0.15) {
-                                const currentMbps = (totalBytes * 8) / (sec * 1000000);
-                                setGauge(currentMbps, Math.max(currentMbps * 1.25, 15));
-                                document.getElementById('dlResult').innerText = currentMbps.toFixed(1);
+
+                            const elapsedSec = (performance.now() - startTime) / 1000;
+                            if (elapsedSec > 0.1) {
+                                const currentMbps = (totalBytes * 8) / (elapsedSec * 1000000);
+                                document.getElementById('speedVal').innerText = currentMbps.toFixed(1);
+                                
+                                // تحديث كسر التقدم
+                                const prog = Math.min(20 + (elapsedSec / (testDuration / 1000)) * 50, 70);
+                                document.getElementById('progressBar').style.width = `${prog}%`;
                             }
-                            if (performance.now() - startTime >= duration || !running) {
+
+                            if (performance.now() - startTime >= testDuration || !isRunning) {
                                 reader.cancel();
                                 break;
                             }
                         }
                     } catch(e) { break; }
+                    sizeIndex++;
                 }
             };
 
-            await Promise.all([fetchWorker(), fetchWorker()]);
-            const elapsed = (performance.now() - startTime) / 1000;
-            return elapsed > 0 ? (totalBytes * 8) / (elapsed * 1000000) : 0;
+            // تشغيل 4 اتصالات متوازية كحد أقصى للحصول على أقصى سرعة
+            await Promise.all([worker(1), worker(2), worker(3), worker(4)]);
+
+            const totalTime = (performance.now() - startTime) / 1000;
+            return totalTime > 0 ? (totalBytes * 8) / (totalTime * 1000000) : 0;
         }
 
-        async function runUploadTest() {
-            const duration = 4000;
+        async function runUploadFast() {
+            const duration = 3500;
             const startTime = performance.now();
             let totalBytes = 0;
-            const payload = new Uint8Array(128 * 1024); // 128KB chunks
+            const chunk = new Uint8Array(256 * 1024); // 256KB
 
-            while (performance.now() - startTime < duration && running) {
+            while (performance.now() - startTime < duration && isRunning) {
                 try {
-                    await fetch(`https://speed.cloudflare.com/__up?r=${Math.random()}`, {
-                        method: 'POST',
-                        body: payload,
-                        mode: 'no-cors', // منع حظر CORS في الأجهزة المحمولة
-                        cache: 'no-store',
-                        signal: controller.signal
-                    });
-                    totalBytes += payload.length;
-                } catch(e) {
-                    totalBytes += payload.length * 0.8;
-                }
-                const sec = (performance.now() - startTime) / 1000;
-                if (sec > 0.15) {
-                    const currentMbps = (totalBytes * 8) / (sec * 1000000);
-                    setGauge(currentMbps, Math.max(currentMbps * 1.25, 10));
-                    document.getElementById('ulResult').innerText = currentMbps.toFixed(1);
-                }
-            }
-            const elapsed = (performance.now() - startTime) / 1000;
-            return elapsed > 0 ? (totalBytes * 8) / (elapsed * 1000000) : 0;
-        }
-
-        async function fetchNetworkDetails() {
-            try {
-                const res = await fetch('https://ipwho.is/');
-                const data = await res.json();
-                if (data && data.success) {
-                    document.getElementById('ipVal').innerText = data.ip || 'غير معروف';
-                    document.getElementById('ispVal').innerText = data.connection?.isp || 'غير معروف';
-                    document.getElementById('locVal').innerText = `${data.country || ''} - ${data.city || ''}`;
-                }
-            } catch(e) {
-                document.getElementById('ipVal').innerText = 'متصل';
-                document.getElementById('ispVal').innerText = 'شبكة محلية';
-                document.getElementById('locVal').innerText = 'غير محدد';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchNetworkDetails);
-    </script>
-</body>
-</html>
+                    await fetch(`https://speed.cloudflare.
