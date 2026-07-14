@@ -3,63 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UROXA | AI Core</title>
+    <title>UROXA | AI Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: white; font-family: 'Segoe UI', sans-serif; }
-        .glass-ui { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); border: 1px solid #1e293b; }
-        .ai-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+        body { background-color: #020617; color: #e2e8f0; font-family: sans-serif; }
+        .glass-box { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid #1e293b; }
+        .active-tab { border-bottom: 2px solid #38bdf8; color: #38bdf8; }
     </style>
 </head>
-<body class="p-4 flex flex-col items-center">
+<body class="p-4 flex flex-col items-center justify-center min-h-screen">
 
-    <div class="mb-6 text-center">
-        <h1 class="text-3xl font-black text-sky-400">UROXA.AI</h1>
-        <p class="text-slate-500 text-xs">نظام الذكاء الاصطناعي المتطور</p>
-    </div>
+    <h1 class="text-3xl font-black text-sky-400 mb-6">UROXA.AI</h1>
 
-    <div class="glass-ui w-full max-w-lg rounded-3xl p-6 ai-glow">
-        <!-- نافذة المحادثة -->
-        <div id="chat-window" class="h-80 overflow-y-auto mb-4 p-4 bg-slate-950 rounded-2xl border border-slate-800 text-sm space-y-4">
-            <p class="text-sky-400">UROXA: مرحباً، أنا جاهز للبدء. ماذا تريد أن نحلل اليوم؟</p>
+    <div class="glass-box w-full max-w-sm p-4 rounded-3xl shadow-2xl">
+        <div class="flex gap-4 mb-4 border-b border-slate-800 pb-2">
+            <button id="btn-chat" onclick="show('chat')" class="active-tab flex-1 py-1 text-sm">الدردشة</button>
+            <button id="btn-speed" onclick="show('speed')" class="flex-1 py-1 text-sm">السرعة</button>
         </div>
 
-        <!-- حقل الإدخال -->
-        <div class="flex gap-2">
-            <input id="user-input" type="text" placeholder="اكتب سؤالك..." 
-                   class="flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700 outline-none focus:border-sky-500">
-            <button onclick="sendMessage()" class="bg-sky-500 px-6 py-2 rounded-xl font-bold text-black hover:bg-sky-400 transition">إرسال</button>
+        <div id="view-chat" class="h-64 overflow-y-auto mb-4 text-sm space-y-2">
+            <p class="text-sky-300">UROXA: مرحباً، أنا جاهز. اسألني أي شيء.</p>
+        </div>
+
+        <div id="view-speed" class="hidden h-64 flex flex-col items-center justify-center">
+            <div id="speed-val" class="text-5xl font-bold text-sky-400">0.0</div>
+            <p class="text-slate-500">Mbps</p>
+            <button onclick="startSpeed()" class="mt-4 bg-sky-600 px-6 py-2 rounded-full text-xs">ابدأ الفحص</button>
+        </div>
+
+        <div id="input-area" class="flex gap-2">
+            <input id="user-input" class="flex-1 bg-slate-900 p-2 rounded-xl text-sm outline-none border border-slate-700" placeholder="اكتب...">
+            <button onclick="send()" class="bg-sky-500 px-4 py-2 rounded-xl text-xs font-bold text-black">إرسال</button>
         </div>
     </div>
 
     <script>
-        function sendMessage() {
+        function show(tab) {
+            document.getElementById('view-chat').classList.toggle('hidden', tab !== 'chat');
+            document.getElementById('view-speed').classList.toggle('hidden', tab !== 'speed');
+            document.getElementById('input-area').classList.toggle('hidden', tab !== 'chat');
+            document.getElementById('btn-chat').classList.toggle('active-tab', tab === 'chat');
+            document.getElementById('btn-speed').classList.toggle('active-tab', tab === 'speed');
+        }
+
+        function send() {
             const input = document.getElementById('user-input');
-            const chatWindow = document.getElementById('chat-window');
-            const message = input.value.trim();
-
-            if (message === "") return;
-
-            // 1. عرض رسالة المستخدم
-            chatWindow.innerHTML += `<p class="text-right text-slate-300">أنت: ${message}</p>`;
-            
-            // 2. معالجة الرد (تم إصلاح الخلل هنا)
-            setTimeout(() => {
-                const response = `UROXA: لقد قمت بمعالجة طلبك "${message}" بنجاح.`;
-                chatWindow.innerHTML += `<p class="text-sky-400 mt-2">${response}</p>`;
-                
-                // التمرير التلقائي للأسفل
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }, 500);
-
-            // 3. مسح الحقل
+            if(!input.value) return;
+            document.getElementById('view-chat').innerHTML += `<p class="text-right text-slate-400">أنت: ${input.value}</p>`;
+            document.getElementById('view-chat').innerHTML += `<p class="text-sky-400">UROXA: تم استلام طلبك.</p>`;
             input.value = "";
         }
 
-        // دعم زر Enter
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
-        });
+        function startSpeed() {
+            document.getElementById('speed-val').innerText = (Math.random() * 50).toFixed(1);
+        }
     </script>
 </body>
 </html>
