@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص السرعة والعداد التفاعلي</title>
+    <title>SpeedPulse - فحص سرعة الإنترنت</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,7 +13,6 @@
             --card-bg: rgba(12, 22, 45, 0.85);
             --border: rgba(0, 229, 255, 0.25);
             --cyan: #00e5ff;
-            --green: #00ff88;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -33,6 +32,14 @@
         }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
+        .fast-number {
+            font-size: clamp(4.5rem, 16vw, 7rem);
+            line-height: 1;
+            font-weight: 900;
+            color: var(--cyan);
+            text-shadow: 0 0 25px rgba(0, 229, 255, 0.35);
+        }
+
         .glass-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -46,68 +53,34 @@
             transition: all 0.2s ease;
         }
         .reload-btn:active { transform: scale(0.9); }
-
-        /* تخصيص إبرة العداد */
-        #needle {
-            transform-origin: 100px 100px;
-            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #gaugeArc {
-            transition: stroke-dashoffset 0.15s linear;
-        }
     </style>
 </head>
 <body class="relative z-10 min-h-screen p-4 flex flex-col justify-between max-w-xl mx-auto w-full">
     <div class="bg-grid"></div>
 
-    <header class="flex items-center justify-between pt-2 pb-2">
+    <header class="flex items-center justify-between pt-2 pb-4">
         <div class="flex items-center gap-2">
             <h1 class="text-2xl font-black text-cyan-400 orbitron">SpeedPulse</h1>
             <i class="fas fa-bolt text-cyan-400"></i>
         </div>
-        
-        <div class="text-left">
-            <div id="liveClock" class="text-sm font-bold text-cyan-400 orbitron tracking-wider">--:--:--</div>
-            <div id="liveDate" class="text-[10px] text-slate-400">جاري التحميل...</div>
-        </div>
-
-        <button onclick="triggerRestart()" class="reload-btn w-10 h-10 rounded-full flex items-center justify-center text-lg">
+        <button onclick="restartSpeedTest()" class="reload-btn w-10 h-10 rounded-full flex items-center justify-center text-lg">
             <i class="fas fa-rotate-right" id="reloadIcon"></i>
         </button>
     </header>
 
-    <main class="my-auto flex flex-col items-center justify-center text-center py-2">
+    <main class="my-auto flex flex-col items-center justify-center text-center py-4">
+        <p class="text-xs text-slate-400 mb-2 font-bold tracking-widest uppercase">سرعة التنزيل الحالية</p>
         
-        <div class="relative w-72 h-44 flex items-center justify-center">
-            <svg class="w-full h-full" viewBox="0 0 200 120">
-                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12" stroke-linecap="round"/>
-                
-                <path id="gaugeArc" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#cyanGrad)" stroke-width="12" stroke-linecap="round"
-                      stroke-dasharray="251.2" stroke-dashoffset="251.2" />
-                
-                <g id="needle" transform="rotate(-90 100 100)">
-                    <line x1="100" y1="100" x2="30" y2="100" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
-                    <circle cx="100" cy="100" r="7" fill="#00e5ff" stroke="#050a15" stroke-width="2"/>
-                </g>
-
-                <defs>
-                    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#00e5ff" />
-                        <stop offset="100%" stop-color="#00ff88" />
-                    </linearGradient>
-                </defs>
-            </svg>
-
-            <div class="absolute bottom-1 flex flex-col items-center">
-                <span id="speedVal" class="text-4xl font-black text-cyan-400 orbitron">0.0</span>
-                <span class="text-xs font-bold text-slate-400 orbitron">Mbps</span>
+        <div class="flex items-baseline justify-center gap-2 my-2">
+            <span id="speedVal" class="fast-number orbitron">0.0</span>
+            <div class="text-right">
+                <span class="block text-xl font-extrabold text-cyan-400 orbitron">Mbps</span>
+                <span id="statusBadge" class="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">جاري الإعداد...</span>
             </div>
         </div>
 
-        <span id="statusBadge" class="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-3 py-1 rounded-full border border-amber-500/30 my-2">جاري الفحص...</span>
-
-        <div class="w-full max-w-xs bg-slate-900 rounded-full h-1.5 mb-6 overflow-hidden border border-slate-800">
-            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-100"></div>
+        <div class="w-full max-w-xs bg-slate-900 rounded-full h-2 mt-4 mb-8 overflow-hidden border border-slate-800">
+            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-150"></div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 w-full">
@@ -128,11 +101,21 @@
             </div>
         </div>
 
-        <div class="glass-card p-3 w-full mt-3 text-xs text-right space-y-1.5">
-            <div class="flex justify-between items-center text-slate-400">
-                <span>الموقع (المدينة - الدولة):</span>
-                <span id="locationVal" class="text-cyan-400 font-bold">جاري التحديد...</span>
-            </div>
+        <div class="glass-card p-3 w-full mt-4 text-xs text-right space-y-1">
             <div class="flex justify-between items-center text-slate-400">
                 <span>المزود (ISP):</span>
-                <span id="ispVal" class="text-slate-20
+                <span id="ispVal" class="text-slate-200 font-bold">جاري الجلب...</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-400">
+                <span>العنوان (IP):</span>
+                <span id="ipVal" class="text-slate-200 font-mono">--</span>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-3 text-center flex flex-col items-center justify-center gap-1.5 border-t border-slate-800/80">
+        <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1 shadow-[0_0_12px_rgba(0,229,255,0.2)]">
+            <svg viewBox="0 0 200 200" class="w-full h-full">
+                <circle cx="100" cy="100" r="95" fill="none" stroke="#e2e8f0" stroke-width="4"/>
+                <path d="M 60,110 C 50,60 120,40 140,70 C 160,100 120,130 90,140" fill="none" stroke="#0088cc" stroke-width="16" stroke-linecap="round"/>
+                <path d="M 85,75 L 145,135 M 145,135 L 120,1
