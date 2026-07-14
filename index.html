@@ -3,118 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpeedPulse - فحص السرعة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>UROXA | AI Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #080d19;
-            color: #ffffff;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .bg-grid {
-            position: fixed; inset: 0; z-index: 0; opacity: 0.15; pointer-events: none;
-            background-image: 
-                linear-gradient(rgba(0, 229, 255, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 229, 255, 0.2) 1px, transparent 1px);
-            background-size: 35px 35px;
-        }
-        .num-font { font-family: 'Orbitron', sans-serif; }
-        
-        .glowing-bar {
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
-            transition: width 0.3s ease;
-        }
-        .glass-panel {
-            background-color: rgba(17, 26, 48, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-        }
-        .action-btn {
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
-            transition: all 0.2s ease;
-        }
-        .action-btn:active { transform: scale(0.95); }
-        .spin-anim { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background: #020617; }
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.2); }
+        .active-nav { background: rgba(56, 189, 248, 0.2); border-right: 4px solid #38bdf8; }
     </style>
 </head>
-<body class="relative min-h-screen flex flex-col items-center overflow-x-hidden">
-    
-    <div class="bg-grid"></div>
+<body class="h-screen flex overflow-hidden text-slate-200">
 
-    <div class="relative z-10 w-full max-w-md p-5 flex flex-col h-screen justify-between">
-        
-        <header class="flex justify-between items-center w-full pt-2">
-            <button id="refreshIpBtn" class="w-10 h-10 rounded-full border border-[#00e5ff] text-[#00e5ff] flex items-center justify-center action-btn">
-                <i class="fas fa-redo-alt text-sm"></i>
+    <!-- الشريط الجانبي -->
+    <aside class="w-20 lg:w-72 glass-panel flex flex-col p-4">
+        <div class="text-sky-400 text-3xl font-black mb-10 text-center">UROXA</div>
+        <nav class="space-y-4">
+            <button onclick="showPage('chat')" id="btn-chat" class="flex items-center gap-4 w-full p-3 rounded-xl active-nav">
+                <span class="text-2xl">🤖</span> <span class="hidden lg:block">الدردشة</span>
             </button>
-            <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-bold num-font text-[#00e5ff] tracking-wide">SpeedPulse</h1>
-                <i class="fas fa-bolt text-[#00e5ff] text-xl"></i>
-            </div>
-        </header>
-
-        <main class="flex-1 flex flex-col items-center justify-center w-full mt-4">
-            <p class="text-gray-400 text-sm mb-3" id="testStatus">سرعة التنزيل الحالية</p>
-            
-            <div class="flex items-baseline gap-3 mb-1">
-                <span class="text-[#00e5ff] text-2xl font-medium">Mbps</span>
-                <span id="downloadValue" class="text-7xl font-bold num-font text-[#00e5ff] drop-shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">0.0</span>
-            </div>
-
-            <div id="badgeComplete" class="px-3 py-0.5 rounded-full border border-[#00ff88] text-[#00ff88] text-[10px] mb-4 opacity-0 transition-opacity">مكتمل</div>
-
-            <div class="w-full bg-gray-800 h-1.5 rounded-full mb-10 overflow-hidden">
-                <div id="progressBar" class="h-full bg-[#00e5ff] w-0 glowing-bar"></div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3 w-full mb-4">
-                <div class="glass-panel p-3 flex flex-col items-center justify-center">
-                    <p class="text-gray-400 text-xs mb-2 flex items-center gap-1">
-                        الاهتزاز <i class="fas fa-wave-square text-[#c084fc]"></i>
-                    </p>
-                    <p id="jitterValue" class="text-[#c084fc] text-xl font-bold num-font">--</p>
-                    <p class="text-gray-500 text-[10px] mt-1">ms</p>
-                </div>
-                
-                <div class="glass-panel p-3 flex flex-col items-center justify-center">
-                    <p class="text-gray-400 text-xs mb-2 flex items-center gap-1">
-                        البينغ <i class="fas fa-stopwatch text-[#ffaa00]"></i>
-                    </p>
-                    <p id="pingValue" class="text-[#ffaa00] text-xl font-bold num-font">--</p>
-                    <p class="text-gray-500 text-[10px] mt-1">ms</p>
-                </div>
-
-                <div class="glass-panel p-3 flex flex-col items-center justify-center">
-                    <p class="text-gray-400 text-xs mb-2 flex items-center gap-1">
-                        الرفع <i class="fas fa-arrow-up text-[#00ff88]"></i>
-                    </p>
-                    <p id="uploadValue" class="text-[#00ff88] text-xl font-bold num-font">--</p>
-                    <p class="text-gray-500 text-[10px] mt-1">Mbps</p>
-                </div>
-            </div>
-
-            <div class="glass-panel w-full p-4 flex flex-col gap-3 text-xs">
-                <div class="flex justify-between items-start">
-                    <span id="ispVal" class="text-white font-medium text-left leading-relaxed max-w-[70%]">جاري التحميل...</span>
-                    <span class="text-gray-400 whitespace-nowrap ml-2">المزود (ISP):</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span id="ipVal" class="text-white font-medium num-font tracking-wider">--</span>
-                    <span class="text-gray-400 whitespace-nowrap ml-2">العنوان (IP):</span>
-                </div>
-            </div>
-        </main>
-
-        <div class="w-full flex justify-center pb-6 mt-4">
-            <button id="startBtn" class="w-14 h-14 rounded-full border-2 border-[#00e5ff] flex items-center justify-center bg-[#080d19] action-btn group">
-                <i id="btnIcon" class="fas fa-exchange-alt text-2xl text-[#ffaa00] -rotate-45 group-hover:scale-110 transition-transform"></i>
+            <button onclick="showPage('speed')" id="btn-speed" class="flex items-center gap-4 w-full p-3 rounded-xl hover:bg-sky-500/10">
+                <span class="text-2xl">⚡</span> <span class="hidden lg:block">فحص السرعة</span>
             </button>
+        </nav>
+    </aside>
+
+    <!-- منطقة المحتوى -->
+    <main class="flex-1 flex flex-col p-4 lg:p-8">
+        <!-- صفحة الدردشة -->
+        <div id="page-chat" class="flex-1 flex flex-col h-full">
+            <div id="chat-window" class="flex-1 glass-panel rounded-3xl p-6 mb-6 overflow-y-auto">
+                <div class="flex gap-4 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center font-bold">U</div>
+                    <div class="bg-slate-800 p-4 rounded-2xl">أهلاً بك في UROXA. كيف أساعدك اليوم؟</div>
+                </div>
+            </div>
+            <div class="glass-panel rounded-2xl p-2 flex gap-2">
+                <input id="chat-input" type="text" placeholder="اكتب استفسارك..." class="flex-1 bg-transparent p-3 outline-none">
+                <button onclick="sendMessage()" class="bg-sky-500 hover:bg-sky-600 px-6 py-2 rounded-xl">إرسال</button>
+            </div>
         </div>
-    </div>
+
+        <!-- صفحة فحص السرعة (مخفية افتراضياً) -->
+        <div id="page-speed" class="hidden flex-1 flex flex-col items-center justify-center glass-panel rounded-3xl p-8">
+            <h2 class="text-3xl font-bold mb-8">اختبار سرعة UROXA</h2>
+            <div id="speed-value" class="text-6xl font-black text-sky-400 mb-6">0.0</div>
+            <p class="mb-8">Mbps</p>
+            <button onclick="startSpeedTest()" class="bg-sky-500 hover:bg-sky-600 px-12 py-4 rounded-full font-bold">ابدأ الفحص</button>
+        </div>
+    </main>
 
     <script>
-        const $
+        // منطق التبديل بين الصفحات
+        function showPage(page) {
+            document.getElementById('page-chat').classList.toggle('hidden', page !== 'chat');
+            document.getElementById('page-speed').classList.toggle('hidden', page !== 'speed');
+            document.getElementById('btn-chat').classList.toggle('active-nav', page === 'chat');
+            document.getElementById('btn-speed').classList.toggle('active-nav', page === 'speed');
+        }
+
+        // منطق الدردشة
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            if (!input.value) return;
+            const chat = document.getElementById('chat-window');
+            chat.innerHTML += `<div class="flex flex-row-reverse gap-4 mb-6"><div class="bg-sky-900 p-4 rounded-2xl">${input.value}</div></div>`;
+            input.value = "";
+        }
+
+        // منطق فحص السرعة
+        function startSpeedTest() {
+            const speedEl = document.getElementById('speed-value');
+            let speed = 0;
+            const interval = setInterval(() => {
+                speed += Math.random() * 10;
+                speedEl.textContent = speed.toFixed(1);
+                if (speed >= 85) clearInterval(interval);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
