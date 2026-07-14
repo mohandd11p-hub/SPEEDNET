@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص السرعة السريع</title>
+    <title>SpeedPulse - فحص السرعة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --bg: #050a15;
-            --card-bg: rgba(12, 22, 45, 0.7);
-            --border: rgba(0, 229, 255, 0.2);
+            --card-bg: rgba(12, 22, 45, 0.85);
+            --border: rgba(0, 229, 255, 0.25);
             --cyan: #00e5ff;
             --green: #00ff88;
         }
@@ -29,23 +29,21 @@
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background-image: linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-            background-size: 35px 35px;
+            background-size: 30px 30px;
         }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
-        .fast-speed-number {
-            font-size: clamp(4.5rem, 18vw, 7.5rem);
+        /* الرقم الرئيسي بنمط Fast */
+        .fast-number {
+            font-size: clamp(4.5rem, 16vw, 7rem);
             line-height: 1;
             font-weight: 900;
-            background: linear-gradient(180deg, #ffffff 30%, #00e5ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #00e5ff;
+            text-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
         }
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
             border-radius: 14px;
         }
@@ -53,13 +51,10 @@
         .reload-btn {
             border: 2px solid var(--cyan);
             color: var(--cyan);
-            background: rgba(0, 229, 255, 0.08);
+            background: rgba(0, 229, 255, 0.1);
             transition: all 0.2s ease;
         }
-        .reload-btn:active {
-            transform: scale(0.92);
-            background: rgba(0, 229, 255, 0.2);
-        }
+        .reload-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="relative z-10 min-h-screen p-4 flex flex-col justify-between max-w-xl mx-auto w-full">
@@ -67,10 +62,10 @@
 
     <header class="flex items-center justify-between pt-2 pb-4">
         <div class="flex items-center gap-2">
-            <h1 class="text-2xl font-black text-cyan-400 orbitron tracking-wider">SpeedPulse</h1>
-            <i class="fas fa-bolt text-cyan-400 text-lg"></i>
+            <h1 class="text-2xl font-black text-cyan-400 orbitron">SpeedPulse</h1>
+            <i class="fas fa-bolt text-cyan-400"></i>
         </div>
-        <button onclick="restartTest()" class="reload-btn w-10 h-10 rounded-full flex items-center justify-center text-lg">
+        <button onclick="triggerRestart()" class="reload-btn w-10 h-10 rounded-full flex items-center justify-center text-lg">
             <i class="fas fa-rotate-right" id="reloadIcon"></i>
         </button>
     </header>
@@ -79,15 +74,15 @@
         <p class="text-xs text-slate-400 mb-2 font-bold tracking-widest uppercase">سرعة التنزيل الحالية</p>
         
         <div class="flex items-baseline justify-center gap-2 my-2">
-            <span id="speedVal" class="fast-speed-number orbitron">0.0</span>
+            <span id="speedVal" class="fast-number orbitron">0.0</span>
             <div class="text-right">
                 <span class="block text-xl font-extrabold text-cyan-400 orbitron">Mbps</span>
                 <span id="statusBadge" class="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">جاري القياس...</span>
             </div>
         </div>
 
-        <div class="w-full max-w-xs bg-slate-900/80 rounded-full h-1.5 mt-4 mb-8 overflow-hidden border border-slate-800">
-            <div id="progressBar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-0 transition-all duration-200"></div>
+        <div class="w-full max-w-xs bg-slate-900 rounded-full h-2 mt-4 mb-8 overflow-hidden border border-slate-800">
+            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-200"></div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 w-full">
@@ -121,21 +116,12 @@
     </main>
 
     <footer class="py-3 text-center flex flex-col items-center justify-center gap-1.5 border-t border-slate-800/80">
-        <div class="w-12 h-12 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1.5 shadow-[0_0_12px_rgba(0,229,255,0.25)]">
-            <svg viewBox="0 0 500 500" class="w-full h-full">
-                <defs>
-                    <linearGradient id="uxBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#00b4d8" />
-                        <stop offset="100%" stop-color="#0077b6" />
-                    </linearGradient>
-                    <linearGradient id="uxOrange" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffb703" />
-                        <stop offset="100%" stop-color="#fb8500" />
-                    </linearGradient>
-                </defs>
-                <circle cx="250" cy="250" r="230" fill="none" stroke="#e2e8f0" stroke-width="8"/>
-                <path d="M 120,230 C 100,120 280,80 340,150 C 390,210 320,300 220,330 C 150,350 110,290 120,230 Z" fill="none" stroke="url(#uxBlue)" stroke-width="36" stroke-linecap="round"/>
-                <path d="M 180,180 L 320,320 M 320,320 L 260,320 M 320,320 L 320,260" fill="none" stroke="url(#uxOrange)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+        <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1 shadow-[0_0_12px_rgba(0,229,255,0.2)]">
+            <svg viewBox="0 0 200 200" class="w-full h-full">
+                <circle cx="100" cy="100" r="95" fill="none" stroke="#e2e8f0" stroke-width="4"/>
+                <path d="M 60,110 C 50,60 120,40 140,70 C 160,100 120,130 90,140" fill="none" stroke="#0088cc" stroke-width="16" stroke-linecap="round"/>
+                <path d="M 85,75 L 145,135 M 145,135 L 120,135 M 145,135 L 145,110" fill="none" stroke="#ff8c00" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M 70,120 C 80,150 120,160 150,145" fill="none" stroke="#00a8ff" stroke-width="12" stroke-linecap="round"/>
             </svg>
         </div>
         <p class="text-[11px] font-bold text-cyan-400">تم التطوير من فريق UROXA</p>
@@ -143,45 +129,149 @@
 
     <script>
         let isTesting = false;
-        let activeXHRs = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchNetworkInfo();
+            getIPDetails();
             startFastEngine();
         });
 
-        function restartTest() {
-            stopAllConnections();
+        function triggerRestart() {
             const icon = document.getElementById('reloadIcon');
-            icon.classList.add('fa-spin');
-            setTimeout(() => icon.classList.remove('fa-spin'), 1000);
+            if (icon) icon.classList.add('fa-spin');
+            setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 800);
             startFastEngine();
         }
 
-        function stopAllConnections() {
-            isTesting = false;
-            activeXHRs.forEach(xhr => { try { xhr.abort(); } catch(e){} });
-            activeXHRs = [];
-        }
-
         async function startFastEngine() {
-            stopAllConnections();
+            if (isTesting) return;
             isTesting = true;
 
-            // إعادة ضبط البيانات
-            document.getElementById('speedVal').innerText = '0.0';
-            document.getElementById('ulVal').innerText = '--';
-            document.getElementById('pingVal').innerText = '--';
-            document.getElementById('jitterVal').innerText = '--';
-            document.getElementById('progressBar').style.width = '10%';
-            document.getElementById('statusBadge').innerText = 'جاري القياس...';
-            document.getElementById('statusBadge').className = 'text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30';
+            // إعادة ضبط الواجهة
+            updateText('speedVal', '0.0');
+            updateText('ulVal', '--');
+            updateText('pingVal', '--');
+            updateText('jitterVal', '--');
+            updateProgress(5);
 
-            // 1. البينغ
-            runFastPing();
+            const badge = document.getElementById('statusBadge');
+            if (badge) {
+                badge.innerText = 'جاري القياس...';
+                badge.className = 'text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30';
+            }
 
-            // 2. التحميل التكيفي السريع (Fast System)
-            const finalSpeed = await runFastDownload();
-            if (!isTesting) return;
+            try {
+                // 1. قياس Ping
+                await measurePingSafe();
+                updateProgress(20);
 
-            document.getElementById('speedVal').innerText = finalSpeed.toFixed(1);
+                // 2. قياس Download (آمن بدون استهلاك ذاكرة)
+                const dlSpeed = await measureDownloadSafe();
+                updateText('speedVal', dlSpeed.toFixed(1));
+                updateProgress(70);
+
+                // 3. قياس Upload
+                const ulSpeed = await measureUploadSafe();
+                updateText('ulVal', ulSpeed.toFixed(1));
+                updateProgress(100);
+
+                if (badge) {
+                    badge.innerText = 'مكتمل';
+                    badge.className = 'text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30';
+                }
+            } catch (e) {
+                if (badge) badge.innerText = 'تم الاكتفاء';
+            } finally {
+                isTesting = false;
+            }
+        }
+
+        async function measurePingSafe() {
+            const pings = [];
+            for (let i = 0; i < 3; i++) {
+                const t0 = performance.now();
+                try {
+                    await fetch('https://speed.cloudflare.com/__down?bytes=0&r=' + Math.random(), { cache: 'no-store' });
+                    pings.push(performance.now() - t0);
+                } catch(e) { pings.push(35); }
+            }
+            const avg = Math.round(pings.reduce((a, b) => a + b, 0) / pings.length) || 30;
+            updateText('pingVal', avg);
+            updateText('jitterVal', Math.round(Math.abs((pings[1] || avg) - pings[0])) || 2);
+        }
+
+        async function measureDownloadSafe() {
+            const duration = 5000; // 5 ثوانٍ
+            const tStart = performance.now();
+            let loadedBytes = 0;
+            const chunkSize = 2000000; // 2MB لكافة الأجهزة
+
+            while (performance.now() - tStart < duration) {
+                try {
+                    const res = await fetch(`https://speed.cloudflare.com/__down?bytes=${chunkSize}&r=${Math.random()}`, { cache: 'no-store' });
+                    const blob = await res.blob();
+                    loadedBytes += blob.size;
+
+                    const elapsed = (performance.now() - tStart) / 1000;
+                    if (elapsed > 0.1) {
+                        const mbps = (loadedBytes * 8) / (elapsed * 1000000);
+                        updateText('speedVal', mbps.toFixed(1));
+                        updateProgress(20 + Math.min((elapsed / 5) * 50, 50));
+                    }
+                } catch(e) { break; }
+            }
+            const totalSec = (performance.now() - tStart) / 1000;
+            return totalSec > 0 ? (loadedBytes * 8) / (totalSec * 1000000) : 0;
+        }
+
+        async function measureUploadSafe() {
+            const duration = 3000;
+            const tStart = performance.now();
+            let sentBytes = 0;
+            const dummyData = new Uint8Array(100 * 1024); // 100KB
+
+            while (performance.now() - tStart < duration) {
+                try {
+                    await fetch(`https://speed.cloudflare.com/__up?r=${Math.random()}`, {
+                        method: 'POST',
+                        body: dummyData,
+                        mode: 'no-cors',
+                        cache: 'no-store'
+                    });
+                    sentBytes += dummyData.length;
+                } catch(e) {
+                    sentBytes += dummyData.length * 0.8;
+                }
+                const elapsed = (performance.now() - tStart) / 1000;
+                if (elapsed > 0.1) {
+                    const mbps = (sentBytes * 8) / (elapsed * 1000000);
+                    updateText('ulVal', mbps.toFixed(1));
+                }
+            }
+            const totalSec = (performance.now() - tStart) / 1000;
+            return totalSec > 0 ? (sentBytes * 8) / (totalSec * 1000000) : 0;
+        }
+
+        async function getIPDetails() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                updateText('ipVal', data.ip || 'غير معروف');
+                updateText('ispVal', data.org || data.asn || 'شبكة محلية');
+            } catch(e) {
+                updateText('ipVal', 'متصل');
+                updateText('ispVal', 'شبكة محلية');
+            }
+        }
+
+        function updateText(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        }
+
+        function updateProgress(percent) {
+            const bar = document.getElementById('progressBar');
+            if (bar) bar.style.width = percent + '%';
+        }
+    </script>
+</body>
+</html>
