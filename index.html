@@ -2,63 +2,50 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>UROXA | Next-Gen AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UROXA | AI Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; }
-        
-        /* تأثير الخلفية الفاخر */
-        .mesh-gradient {
-            background: radial-gradient(circle at 70% 30%, rgba(56, 189, 248, 0.15), transparent),
-                        radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.15), transparent);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .ai-glow { box-shadow: 0 0 40px rgba(56, 189, 248, 0.2); }
+        body { background-color: #020617; color: white; font-family: sans-serif; }
+        .modern-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; }
+        .input-glow:focus { outline: none; border: 1px solid #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
     </style>
 </head>
-<body class="mesh-gradient h-screen overflow-hidden flex">
+<body class="p-4 md:p-8 flex flex-col items-center">
 
-    <aside class="w-20 lg:w-64 border-l border-white/10 p-6 flex flex-col items-center lg:items-start justify-between">
-        <div class="text-2xl font-black text-sky-400 italic tracking-tighter">UROXA.AI</div>
-        <div class="space-y-6 w-full">
-            <div class="flex items-center gap-4 text-sky-400 bg-white/5 p-3 rounded-2xl cursor-pointer">
-                <span>⚡</span><span class="hidden lg:block font-bold">Network</span>
-            </div>
-            <div class="flex items-center gap-4 hover:bg-white/5 p-3 rounded-2xl cursor-pointer transition">
-                <span>🧠</span><span class="hidden lg:block">Intelligence</span>
-            </div>
+    <div class="mb-8 text-center">
+        <h1 class="text-4xl font-black text-sky-400 tracking-tighter">UROXA.AI</h1>
+        <p class="text-slate-400 text-sm">نظام الذكاء الاصطناعي المتطور</p>
+    </div>
+
+    <div class="modern-card w-full max-w-lg p-6 shadow-2xl">
+        <div id="display-area" class="h-64 overflow-y-auto mb-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <p class="text-sky-300">UROXA: مرحباً، أنا جاهز للبدء. ماذا تريد أن نحلل اليوم؟</p>
         </div>
-        <div class="text-[10px] text-white/30 hidden lg:block">Version 2.0.0</div>
-    </aside>
 
-    <main class="flex-1 p-8 flex flex-col">
-        <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col gap-6">
+        <div class="flex gap-2">
+            <input id="user-input" type="text" placeholder="اكتب سؤالك..." class="input-glow flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700">
+            <button onclick="handleInput()" class="bg-sky-500 px-6 py-2 rounded-xl font-bold text-black hover:bg-sky-400">إرسال</button>
+        </div>
+    </div>
+
+    <script>
+        function handleInput() {
+            const input = document.getElementById('user-input');
+            const display = document.getElementById('display-area');
+            if (input.value.trim() === "") return;
+
+            // إضافة رسالة المستخدم
+            display.innerHTML += `<p class="text-right text-slate-300 mt-2">أنت: ${input.value}</p>`;
             
-            <div class="glass-card p-8 rounded-[2rem] ai-glow">
-                <h2 class="text-4xl font-extrabold mb-2">كيف يمكنني مساعدتك؟</h2>
-                <p class="text-white/50 text-sm">UROXA - نظام ذكاء اصطناعي متكامل للتحليل والأداء.</p>
-            </div>
+            // رد UROXA
+            setTimeout(() => {
+                display.innerHTML += `<p class="text-sky-400 mt-2">UROXA: قمت بمعالجة طلبك: "${input.value}" بنجاح.</p>`;
+                display.scrollTop = display.scrollHeight;
+            }, 500);
 
-            <div id="display-area" class="flex-1 glass-card rounded-[2rem] p-6 flex items-center justify-center">
-                <div class="text-center text-white/30">
-                    <div class="text-6xl mb-4">🚀</div>
-                    <p>جاهز للعمل...</p>
-                </div>
-            </div>
-
-            <div class="glass-card p-2 rounded-full flex items-center shadow-2xl">
-                <input type="text" placeholder="اطلب من UROXA تحليل شيء..." class="flex-1 bg-transparent px-6 py-4 outline-none">
-                <button class="bg-sky-500 text-black font-bold px-8 py-3 rounded-full hover:bg-sky-400 transition">إرسال</button>
-            </div>
-        </div>
-    </main>
-
+            input.value = "";
+        }
+    </script>
 </body>
 </html>
