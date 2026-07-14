@@ -3,48 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UROXA | AI Interface</title>
+    <title>UROXA | AI Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: white; font-family: sans-serif; }
-        .modern-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; }
-        .input-glow:focus { outline: none; border: 1px solid #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; }
+        .glass-ui { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(15px); border: 1px solid #333; }
+        .ai-border { border: 1px solid #0ea5e9; box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
     </style>
 </head>
-<body class="p-4 md:p-8 flex flex-col items-center">
+<body class="p-4 flex flex-col items-center">
 
-    <div class="mb-8 text-center">
-        <h1 class="text-4xl font-black text-sky-400 tracking-tighter">UROXA.AI</h1>
-        <p class="text-slate-400 text-sm">نظام الذكاء الاصطناعي المتطور</p>
-    </div>
+    <header class="w-full max-w-lg mb-6 flex justify-between items-center">
+        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">UROXA</h1>
+        <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+    </header>
 
-    <div class="modern-card w-full max-w-lg p-6 shadow-2xl">
-        <div id="display-area" class="h-64 overflow-y-auto mb-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <p class="text-sky-300">UROXA: مرحباً، أنا جاهز للبدء. ماذا تريد أن نحلل اليوم؟</p>
+    <div class="glass-ui w-full max-w-lg p-6 rounded-3xl ai-border">
+        
+        <div class="flex gap-2 mb-6 bg-black p-1 rounded-full border border-zinc-800">
+            <button onclick="switchTab('chat')" class="flex-1 py-2 rounded-full bg-zinc-800 text-sm">الدردشة</button>
+            <button onclick="switchTab('speed')" class="flex-1 py-2 rounded-full text-sm">السرعة</button>
         </div>
 
-        <div class="flex gap-2">
-            <input id="user-input" type="text" placeholder="اكتب سؤالك..." class="input-glow flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700">
-            <button onclick="handleInput()" class="bg-sky-500 px-6 py-2 rounded-xl font-bold text-black hover:bg-sky-400">إرسال</button>
+        <div id="content" class="h-80 overflow-y-auto">
+            <p class="text-center text-zinc-500 mt-20">مرحباً بك في UROXA، ابدأ أي مهمة من الأعلى.</p>
         </div>
     </div>
 
     <script>
-        function handleInput() {
-            const input = document.getElementById('user-input');
-            const display = document.getElementById('display-area');
-            if (input.value.trim() === "") return;
-
-            // إضافة رسالة المستخدم
-            display.innerHTML += `<p class="text-right text-slate-300 mt-2">أنت: ${input.value}</p>`;
-            
-            // رد UROXA
-            setTimeout(() => {
-                display.innerHTML += `<p class="text-sky-400 mt-2">UROXA: قمت بمعالجة طلبك: "${input.value}" بنجاح.</p>`;
-                display.scrollTop = display.scrollHeight;
-            }, 500);
-
-            input.value = "";
+        function switchTab(tab) {
+            const content = document.getElementById('content');
+            if(tab === 'chat') {
+                content.innerHTML = `<div class="p-4 bg-zinc-900 rounded-2xl">UROXA: كيف يمكنني تحليل بياناتك اليوم؟</div>`;
+            } else {
+                content.innerHTML = `<div class="text-center mt-10">
+                    <div class="text-5xl font-black text-sky-500">0.0</div>
+                    <p class="text-sm mt-2">جاري فحص النطاق الترددي...</p>
+                </div>`;
+            }
         }
     </script>
 </body>
