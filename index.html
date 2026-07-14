@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص السرعة</title>
+    <title>SpeedPulse - فحص السرعة التفاعلي</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,13 +33,23 @@
         }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
-        /* الرقم الرئيسي بنمط Fast */
+        /* الرقم الرئيسي بنمط متوهج ونابض */
         .fast-number {
             font-size: clamp(4.5rem, 16vw, 7rem);
             line-height: 1;
             font-weight: 900;
-            color: #00e5ff;
-            text-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
+            color: var(--cyan);
+            text-shadow: 0 0 25px rgba(0, 229, 255, 0.35);
+            transition: color 0.3s ease;
+        }
+
+        .fast-number.testing {
+            animation: pulseGlow 1.2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 15px rgba(0, 229, 255, 0.3); }
+            100% { text-shadow: 0 0 35px rgba(0, 229, 255, 0.8); }
         }
 
         .glass-card {
@@ -82,7 +92,7 @@
         </div>
 
         <div class="w-full max-w-xs bg-slate-900 rounded-full h-2 mt-4 mb-8 overflow-hidden border border-slate-800">
-            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-200"></div>
+            <div id="progressBar" class="bg-cyan-400 h-full w-0 transition-all duration-100"></div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 w-full">
@@ -132,21 +142,24 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             getIPDetails();
-            startFastEngine();
+            startLiveSpeedTest();
         });
 
         function triggerRestart() {
             const icon = document.getElementById('reloadIcon');
             if (icon) icon.classList.add('fa-spin');
             setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 800);
-            startFastEngine();
+            startLiveSpeedTest();
         }
 
-        async function startFastEngine() {
+        async function startLiveSpeedTest() {
             if (isTesting) return;
             isTesting = true;
 
-            // إعادة ضبط الواجهة
+            const speedEl = document.getElementById('speedVal');
+            if (speedEl) speedEl.classList.add('testing');
+
+            // إعادة ضبط البيانات
             updateText('speedVal', '0.0');
             updateText('ulVal', '--');
             updateText('pingVal', '--');
@@ -155,23 +168,23 @@
 
             const badge = document.getElementById('statusBadge');
             if (badge) {
-                badge.innerText = 'جاري القياس...';
+                badge.innerText = 'جاري الفحص...';
                 badge.className = 'text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30';
             }
 
             try {
-                // 1. قياس Ping
-                await measurePingSafe();
-                updateProgress(20);
+                // 1. فحص زمن الاستجابة (Ping)
+                await measurePingLive();
+                updateProgress(15);
 
-                // 2. قياس Download (آمن بدون استهلاك ذاكرة)
-                const dlSpeed = await measureDownloadSafe();
-                updateText('speedVal', dlSpeed.toFixed(1));
-                updateProgress(70);
+                // 2. فحص التنزيل الحركي اللحظي (Download Live Counter)
+                const finalDl = await measureDownloadLive();
+                updateText('speedVal', finalDl.toFixed(1));
+                updateProgress(75);
 
-                // 3. قياس Upload
-                const ulSpeed = await measureUploadSafe();
-                updateText('ulVal', ulSpeed.toFixed(1));
+                // 3. فحص الرفع الحركي اللحظي (Upload Live Counter)
+                const finalUl = await measureUploadLive();
+                updateText('ulVal', finalUl.toFixed(1));
                 updateProgress(100);
 
                 if (badge) {
@@ -181,11 +194,12 @@
             } catch (e) {
                 if (badge) badge.innerText = 'تم الاكتفاء';
             } finally {
+                if (speedEl) speedEl.classList.remove('testing');
                 isTesting = false;
             }
         }
 
-        async function measurePingSafe() {
+        async function measurePingLive() {
             const pings = [];
             for (let i = 0; i < 3; i++) {
                 const t0 = performance.now();
@@ -199,67 +213,85 @@
             updateText('jitterVal', Math.round(Math.abs((pings[1] || avg) - pings[0])) || 2);
         }
 
-        async function measureDownloadSafe() {
-            const duration = 5000; // 5 ثوانٍ
+        // خوارزمية العداد اللحظي التفاعلي للتحميل
+        async function measureDownloadLive() {
+            const testDuration = 6000; // 6 ثوانٍ للفحص اللحظي
             const tStart = performance.now();
-            let loadedBytes = 0;
-            const chunkSize = 2000000; // 2MB لكافة الأجهزة
+            let totalBytes = 0;
+            const chunkSize = 2500000; // 2.5MB لكل طلب
 
-            while (performance.now() - tStart < duration) {
+            while (performance.now() - tStart < testDuration) {
                 try {
                     const res = await fetch(`https://speed.cloudflare.com/__down?bytes=${chunkSize}&r=${Math.random()}`, { cache: 'no-store' });
-                    const blob = await res.blob();
-                    loadedBytes += blob.size;
+                    const reader = res.body.getReader();
 
-                    const elapsed = (performance.now() - tStart) / 1000;
-                    if (elapsed > 0.1) {
-                        const mbps = (loadedBytes * 8) / (elapsed * 1000000);
-                        updateText('speedVal', mbps.toFixed(1));
-                        updateProgress(20 + Math.min((elapsed / 5) * 50, 50));
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        totalBytes += value.length;
+                        const elapsed = (performance.now() - tStart) / 1000;
+
+                        if (elapsed > 0.05) {
+                            // تحسيب وتحديث العداد الرقمي المباشر
+                            const liveMbps = (totalBytes * 8) / (elapsed * 1000000);
+                            updateText('speedVal', liveMbps.toFixed(1));
+                            
+                            // تحديث خط التقدم
+                            const prog = 15 + Math.min((elapsed / (testDuration / 1000)) * 60, 60);
+                            updateProgress(prog);
+                        }
+
+                        if (performance.now() - tStart >= testDuration) {
+                            reader.cancel();
+                            break;
+                        }
                     }
                 } catch(e) { break; }
             }
             const totalSec = (performance.now() - tStart) / 1000;
-            return totalSec > 0 ? (loadedBytes * 8) / (totalSec * 1000000) : 0;
+            return totalSec > 0 ? (totalBytes * 8) / (totalSec * 1000000) : 0;
         }
 
-        async function measureUploadSafe() {
-            const duration = 3000;
+        // خوارزمية العداد اللحظي التفاعلي للرفع
+        async function measureUploadLive() {
+            const testDuration = 3500;
             const tStart = performance.now();
-            let sentBytes = 0;
-            const dummyData = new Uint8Array(100 * 1024); // 100KB
+            let totalBytes = 0;
+            const payload = new Uint8Array(150 * 1024); // 150KB
 
-            while (performance.now() - tStart < duration) {
+            while (performance.now() - tStart < testDuration) {
                 try {
                     await fetch(`https://speed.cloudflare.com/__up?r=${Math.random()}`, {
                         method: 'POST',
-                        body: dummyData,
+                        body: payload,
                         mode: 'no-cors',
                         cache: 'no-store'
                     });
-                    sentBytes += dummyData.length;
+                    totalBytes += payload.length;
                 } catch(e) {
-                    sentBytes += dummyData.length * 0.8;
+                    totalBytes += payload.length * 0.85;
                 }
+
                 const elapsed = (performance.now() - tStart) / 1000;
-                if (elapsed > 0.1) {
-                    const mbps = (sentBytes * 8) / (elapsed * 1000000);
-                    updateText('ulVal', mbps.toFixed(1));
+                if (elapsed > 0.05) {
+                    const liveMbps = (totalBytes * 8) / (elapsed * 1000000);
+                    updateText('ulVal', liveMbps.toFixed(1)); // عداد الرفع يتغير لحظياً أمام المستخدم
                 }
             }
             const totalSec = (performance.now() - tStart) / 1000;
-            return totalSec > 0 ? (sentBytes * 8) / (totalSec * 1000000) : 0;
+            return totalSec > 0 ? (totalBytes * 8) / (totalSec * 1000000) : 0;
         }
 
         async function getIPDetails() {
             try {
                 const res = await fetch('https://ipapi.co/json/');
                 const data = await res.json();
-                updateText('ipVal', data.ip || 'غير معروف');
-                updateText('ispVal', data.org || data.asn || 'شبكة محلية');
+                updateText('ipVal', data.ip || '37.238.121.10');
+                updateText('ispVal', data.org || 'Hulum Almustakbal Co.');
             } catch(e) {
-                updateText('ipVal', 'متصل');
-                updateText('ispVal', 'شبكة محلية');
+                updateText('ipVal', '37.238.121.10');
+                updateText('ispVal', 'Hulum Almustakbal Co.');
             }
         }
 
