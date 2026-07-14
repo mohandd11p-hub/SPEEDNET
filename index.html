@@ -3,65 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UROXA | AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0d0d0d; color: #e0e0e0; font-family: sans-serif; }
-        .chat-container { max-width: 700px; }
-        .message-box { background: #1a1a1a; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-        .input-area { background: #202020; border-radius: 28px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4">
+<body class="p-4 flex flex-col min-h-screen">
 
-    <header class="w-full max-w-[700px] py-4">
-        <h1 class="text-2xl font-bold text-white">UROXA</h1>
-    </header>
-
-    <div id="chat-window" class="chat-container w-full flex-1 overflow-y-auto mb-6">
-        <div class="message-box">
-            <p>أهلاً بك! أنا UROXA، مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟</p>
-        </div>
+    <div id="chat-window" class="flex-1 overflow-y-auto mb-20 space-y-4">
+        <div class="bg-[#1a1a1a] p-4 rounded-2xl max-w-[80%]">أهلاً بك! أنا UROXA. كيف أساعدك؟</div>
     </div>
 
-    <div class="input-area w-full max-w-[700px] flex items-center p-2 mb-4 border border-zinc-700">
-        <input id="user-input" type="text" placeholder="اكتب استفساراً..." 
-               class="flex-1 bg-transparent p-3 outline-none text-white">
-        <button id="send-btn" class="p-3 bg-white text-black rounded-full hover:bg-gray-200 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.429a1 1 0 001.169-1.409l-7-14z" />
-            </svg>
-        </button>
+    <!-- حقل الإدخال -->
+    <div class="fixed bottom-4 left-4 right-4 max-w-[700px] mx-auto bg-[#202020] p-2 rounded-full border border-zinc-700 flex items-center">
+        <input id="user-input" type="text" placeholder="اكتب استفساراً..." class="flex-1 bg-transparent p-3 outline-none px-4">
+        <button id="send-btn" class="p-3 bg-white text-black rounded-full">ارسل</button>
     </div>
 
     <script>
         const chatWindow = document.getElementById('chat-window');
         const input = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
 
-        function triggerResponse() {
+        document.getElementById('send-btn').addEventListener('click', () => {
             const message = input.value.trim();
-            if (message === "") return;
+            if (!message) return;
 
-            // 1. إضافة رسالة المستخدم
-            chatWindow.innerHTML += `<div class="text-right p-4 font-bold text-white">${message}</div>`;
+            // 1. إضافة رسالتك (يمين)
+            chatWindow.innerHTML += `<div class="text-right p-3 bg-sky-900 rounded-2xl ml-auto max-w-[80%]">${message}</div>`;
             input.value = "";
 
-            // 2. الرد الآلي
+            // 2. الرد (يسار)
             setTimeout(() => {
-                chatWindow.innerHTML += `
-                    <div class="message-box">
-                        <p class="text-sky-400 font-bold mb-1">UROXA:</p>
-                        <p>جاري معالجة طلبك بذكاء اصطناعي... لقد تلقيت استفسارك وسأقوم بالرد فوراً.</p>
-                    </div>`;
+                chatWindow.innerHTML += `<div class="text-right p-3 bg-[#1a1a1a] rounded-2xl mr-auto max-w-[80%]">UROXA: استلمت طلبك: "${message}". أنا أحلل الآن...</div>`;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
-            }, 600);
-            
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        sendBtn.addEventListener('click', triggerResponse);
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') triggerResponse(); });
+            }, 500);
+        });
     </script>
 </body>
 </html>
