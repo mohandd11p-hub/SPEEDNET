@@ -29,6 +29,7 @@
             overflow-x: hidden;
         }
 
+        /* === تأثيرات الخلفية === */
         .bg-blob {
             position: fixed; border-radius: 50%;
             filter: blur(130px); opacity: 0.13;
@@ -75,6 +76,7 @@
         }
         .content { position: relative; z-index: 1; }
 
+        /* === البطاقات === */
         .glass-card {
             background: var(--bg-card);
             backdrop-filter: blur(18px);
@@ -88,6 +90,7 @@
             box-shadow: 0 0 30px var(--glow);
         }
 
+        /* === زر البدء === */
         .start-btn {
             position: relative; width: 130px; height: 130px;
             border-radius: 50%; border: 3px solid var(--accent);
@@ -127,6 +130,7 @@
             50%{box-shadow:0 0 0 22px rgba(0,229,255,0)}
         }
 
+        /* === النتائج === */
         .result-card {
             opacity: 0; transform: translateY(18px);
             transition: all .5s cubic-bezier(.22,1,.36,1);
@@ -146,6 +150,7 @@
             100%{transform:scale(1);opacity:1}
         }
 
+        /* === هيكل IP === */
         .info-skeleton {
             background: linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%);
             background-size: 200% 100%;
@@ -154,6 +159,7 @@
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
+        /* === التقييم === */
         .speed-rating {
             display: inline-block; padding: 5px 20px;
             border-radius: 20px; font-weight: 700; font-size: 15px;
@@ -165,6 +171,7 @@
         .rating-fair { background:rgba(255,170,0,.12); color:#ffaa00; border:1px solid rgba(255,170,0,.25); }
         .rating-poor { background:rgba(255,51,102,.12); color:#ff3366; border:1px solid rgba(255,51,102,.25); }
 
+        /* === مؤشر المراحل === */
         .phase-ind { display:flex; gap:10px; justify-content:center; margin-top:14px; }
         .phase-dot {
             width: 10px; height: 10px; border-radius: 50%;
@@ -176,6 +183,7 @@
         }
         .phase-dot.done { background: var(--accent2); }
 
+        /* === الإشعارات === */
         .toast {
             position: fixed; bottom: 28px; left: 50%;
             transform: translateX(-50%) translateY(100px);
@@ -188,49 +196,14 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
+        /* === جدول السجل === */
         .history-row { transition: background .2s; }
         .history-row:hover { background: rgba(0,229,255,.04); }
 
-        /* === تذييل مطوّر الفريق === */
-        .dev-footer {
-            border-top: 1px solid var(--border);
-            background: linear-gradient(180deg, transparent 0%, rgba(0,229,255,.02) 100%);
-        }
-        .dev-logo {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(0,229,255,.2);
-            box-shadow: 0 0 25px rgba(0,229,255,.1);
-            transition: all .4s ease;
-        }
-        .dev-logo:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 40px rgba(0,229,255,.25);
-            transform: scale(1.08);
-        }
-        .team-name {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 800;
-            font-size: 1.3rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 2px;
-        }
-        .dev-line {
-            width: 50px; height: 2px;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            border-radius: 2px;
-            margin: 0 auto;
-        }
-
+        /* === استجابة === */
         @media(max-width:768px) {
             .result-value { font-size: 1.4rem; }
             .start-btn { width: 110px; height: 110px; font-size: 15px; }
-            .dev-logo { width: 64px; height: 64px; }
-            .team-name { font-size: 1.05rem; }
         }
         @media(prefers-reduced-motion:reduce) {
             *,*::before,*::after {
@@ -241,6 +214,7 @@
     </style>
 </head>
 <body>
+    <!-- تأثيرات الخلفية -->
     <div class="bg-blob bg-blob-1"></div>
     <div class="bg-blob bg-blob-2"></div>
     <div class="bg-blob bg-blob-3"></div>
@@ -248,6 +222,7 @@
     <canvas id="particleCanvas" aria-hidden="true"></canvas>
 
     <div class="content">
+        <!-- الرأس -->
         <header class="text-center pt-8 pb-2 px-4">
             <div class="flex items-center justify-center gap-3 mb-2">
                 <i class="fas fa-bolt text-2xl" style="color:var(--accent)"></i>
@@ -358,42 +333,24 @@
             </section>
         </main>
 
-        <!-- تذييل فريق UROXA -->
-        <footer class="dev-footer py-12 px-4">
-            <div class="max-w-4xl mx-auto text-center">
-                <!-- الفاصل الزخرفي -->
-                <div class="dev-line mb-8"></div>
-
-                <!-- الشعار + النص -->
-                <div class="flex flex-col items-center gap-4">
-                    <img
-                        src="https://z-cdn-media.chatglm.cn/files/4a5a1acc-4459-473a-a9d7-b91606f2fe3b.jpg?auth_key=1884036940-78aa7067aa454a69a888c80531e7f98f-0-3738059815a1ce905b5c3a6e6d92999a"
-                        alt="UROXA Logo"
-                        class="dev-logo"
-                    >
-                    <div>
-                        <p class="text-sm mb-2" style="color:var(--muted)">تم التطوير من قبل</p>
-                        <span class="team-name">UROXA</span>
-                    </div>
-                </div>
-
-                <!-- الفاصل الزخرفي السفلي -->
-                <div class="dev-line mt-8 mb-4"></div>
-
-                <p class="text-xs" style="color:rgba(255,255,255,.18)">
-                    SpeedPulse &mdash; فحص سرعة الإنترنت عبر شبكة Cloudflare العالمية
-                </p>
-            </div>
+        <footer class="text-center py-6 text-xs" style="color:var(--muted);border-top:1px solid var(--border)">
+            SpeedPulse &mdash; فحص سرعة الإنترنت عبر شبكة Cloudflare العالمية
         </footer>
     </div>
 
     <script>
+    // =============================================
+    // دوال مساعدة
+    // =============================================
+
+    /* دمج لونين بنسبة t */
     function lerpColor(c1, c2, t) {
         const r1=parseInt(c1.slice(1,3),16), g1=parseInt(c1.slice(3,5),16), b1=parseInt(c1.slice(5,7),16);
         const r2=parseInt(c2.slice(1,3),16), g2=parseInt(c2.slice(3,5),16), b2=parseInt(c2.slice(5,7),16);
         return `rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
     }
 
+    /* إشعار منبثق */
     function showToast(msg, dur=3000) {
         const t = document.createElement('div');
         t.className = 'toast'; t.textContent = msg;
@@ -402,6 +359,7 @@
         setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, dur);
     }
 
+    /* تقييم السرعة */
     function getSpeedRating(mbps) {
         if(mbps>=100) return {text:'ممتاز',cls:'rating-excellent'};
         if(mbps>=50)  return {text:'جيد جداً',cls:'rating-vgood'};
@@ -410,12 +368,16 @@
         return {text:'ضعيف',cls:'rating-poor'};
     }
 
+    /* أقصى مقياس مناسب */
     function getNiceMax(speed) {
         const tiers=[50,100,200,500,1000,2000,5000];
         for(const t of tiers) if(speed < t*0.82) return t;
         return 5000;
     }
 
+    // =============================================
+    // خلفية الجسيمات المتصلة
+    // =============================================
     class ParticleBG {
         constructor(cvs) {
             this.cvs=cvs; this.ctx=cvs.getContext('2d');
@@ -423,9 +385,450 @@
             this._resize(); window.addEventListener('resize',()=>this._resize());
             this._init(); this._loop();
         }
-        _resize() { this.cvs.width=window.innerWidth; this.cvs.height=window.innerHeight; }
+        _resize() {
+            this.cvs.width=window.innerWidth;
+            this.cvs.height=window.innerHeight;
+        }
         _init() {
             this.pts=[];
             const n=Math.min(55,Math.floor(this.cvs.width*this.cvs.height/22000));
             for(let i=0;i<n;i++) this.pts.push({
-                x:Math.rando
+                x:Math.random()*this.cvs.width, y:Math.random()*this.cvs.height,
+                vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+                r:Math.random()*1.4+.5, a:Math.random()*.22+.06
+            });
+        }
+        _loop() {
+            if(!this.on) return;
+            const c=this.ctx, w=this.cvs.width, h=this.cvs.height;
+            c.clearRect(0,0,w,h);
+            for(const p of this.pts) {
+                p.x+=p.vx; p.y+=p.vy;
+                if(p.x<0)p.x=w; if(p.x>w)p.x=0;
+                if(p.y<0)p.y=h; if(p.y>h)p.y=0;
+                c.beginPath(); c.arc(p.x,p.y,p.r,0,Math.PI*2);
+                c.fillStyle=`rgba(0,229,255,${p.a})`; c.fill();
+            }
+            for(let i=0;i<this.pts.length;i++) {
+                for(let j=i+1;j<this.pts.length;j++) {
+                    const dx=this.pts[i].x-this.pts[j].x, dy=this.pts[i].y-this.pts[j].y;
+                    const d=Math.sqrt(dx*dx+dy*dy);
+                    if(d<125) {
+                        c.beginPath(); c.moveTo(this.pts[i].x,this.pts[i].y);
+                        c.lineTo(this.pts[j].x,this.pts[j].y);
+                        c.strokeStyle=`rgba(0,229,255,${.055*(1-d/125)})`;
+                        c.lineWidth=.5; c.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(()=>this._loop());
+        }
+    }
+
+    // =============================================
+    // مقياس السرعة (Canvas)
+    // =============================================
+    class SpeedGauge {
+        constructor(cvs) {
+            this.cvs=cvs; this.ctx=cvs.getContext('2d');
+            this.cur=0; this.tgt=0; this.max=100;
+            this.phase='idle'; this.id=null;
+            this._resize(); window.addEventListener('resize',()=>this._resize());
+        }
+        _resize() {
+            const p=this.cvs.parentElement;
+            const s=Math.min(p.clientWidth, p.clientHeight, 370);
+            const d=window.devicePixelRatio||1;
+            this.cvs.width=s*d; this.cvs.height=s*d;
+            this.cvs.style.width=s+'px'; this.cvs.style.height=s+'px';
+            this.ctx.setTransform(d,0,0,d,0,0);
+            this.s=s; this.cx=s/2; this.cy=s/2; this.r=s*.38;
+        }
+        setMax(m){ this.max=Math.max(10,m); }
+        setValue(v){ this.tgt=Math.max(0,v); }
+        setPhase(p){ this.phase=p; }
+        reset(){ this.tgt=0; this.cur=0; this.max=100; this.phase='idle'; }
+
+        draw() {
+            const c=this.ctx, cx=this.cx, cy=this.cy, r=this.r;
+            c.clearRect(0,0,this.s,this.s);
+
+            // زوايا القوس 270°
+            const SA=Math.PI*.75, EA=Math.PI*2.25, TA=EA-SA;
+
+            // قوس خلفي
+            c.beginPath(); c.arc(cx,cy,r,SA,EA);
+            c.strokeStyle='rgba(255,255,255,.035)'; c.lineWidth=r*.17; c.lineCap='round'; c.stroke();
+
+            // قوس القيمة بتدرج
+            const pct=Math.min(this.cur/this.max,1);
+            if(pct>.001) {
+                const VA=SA+pct*TA;
+                const segs=Math.max(2,Math.floor(pct*90));
+                const sa=(VA-SA)/segs;
+                for(let i=0;i<segs;i++) {
+                    const t=i/segs;
+                    c.beginPath(); c.arc(cx,cy,r, SA+i*sa, SA+(i+1)*sa+.006);
+                    c.strokeStyle=lerpColor('#00e5ff','#00ff88',t);
+                    c.lineWidth=r*.17;
+                    c.lineCap=(i===0||i===segs-1)?'round':'butt';
+                    c.stroke();
+                }
+                // توهج
+                c.beginPath(); c.arc(cx,cy,r,SA,VA);
+                c.strokeStyle='rgba(0,229,255,.06)'; c.lineWidth=r*.32; c.lineCap='round'; c.stroke();
+            }
+
+            // علامات القياس
+            const NT=30;
+            for(let i=0;i<=NT;i++) {
+                const a=SA+(i/NT)*TA, maj=i%5===0;
+                const ir=r-(maj?r*.27:r*.2), or=r-r*.09;
+                c.beginPath();
+                c.moveTo(cx+Math.cos(a)*ir, cy+Math.sin(a)*ir);
+                c.lineTo(cx+Math.cos(a)*or, cy+Math.sin(a)*or);
+                c.strokeStyle=maj?'rgba(255,255,255,.3)':'rgba(255,255,255,.08)';
+                c.lineWidth=maj?2:1; c.lineCap='round'; c.stroke();
+                if(maj) {
+                    const lr=r-r*.37, v=Math.round((i/NT)*this.max);
+                    c.fillStyle='rgba(255,255,255,.35)';
+                    c.font=`600 ${Math.max(8,r*.085)}px Orbitron`;
+                    c.textAlign='center'; c.textBaseline='middle';
+                    c.fillText(v.toString(), cx+Math.cos(a)*lr, cy+Math.sin(a)*lr);
+                }
+            }
+
+            // الإبرة
+            const na=SA+pct*TA, nl=r*.62;
+            c.save(); c.translate(cx,cy); c.rotate(na);
+            c.shadowColor='rgba(0,229,255,.55)'; c.shadowBlur=14;
+            c.beginPath(); c.moveTo(-4,-2.2); c.lineTo(nl,0); c.lineTo(-4,2.2); c.closePath();
+            c.fillStyle='#fff'; c.fill();
+            c.shadowBlur=0; c.restore();
+
+            // مركز الإبرة
+            c.beginPath(); c.arc(cx,cy,r*.065,0,Math.PI*2);
+            const cg=c.createRadialGradient(cx,cy,0,cx,cy,r*.065);
+            cg.addColorStop(0,'#1e293b'); cg.addColorStop(1,'#0f172a');
+            c.fillStyle=cg; c.fill();
+            c.strokeStyle='rgba(0,229,255,.5)'; c.lineWidth=2; c.stroke();
+
+            // رقم السرعة
+            const dv=this.cur<10?this.cur.toFixed(2):this.cur.toFixed(1);
+            c.fillStyle='#fff';
+            c.font=`900 ${Math.max(22,r*.34)}px Orbitron`;
+            c.textAlign='center'; c.textBaseline='middle';
+            c.fillText(dv, cx, cy+r*.27);
+
+            // الوحدة
+            c.fillStyle='rgba(255,255,255,.35)';
+            c.font=`500 ${Math.max(10,r*.1)}px Tajawal`;
+            c.fillText('Mbps', cx, cy+r*.46);
+
+            // نص المرحلة
+            const pt={idle:'',ping:'فحص البينق...',download:'فحص التحميل...',upload:'فحص الرفع...',complete:'اكتمل الفحص'};
+            if(this.phase!=='idle') {
+                c.fillStyle='rgba(0,229,255,.75)';
+                c.font=`700 ${Math.max(10,r*.095)}px Tajawal`;
+                c.fillText(pt[this.phase]||'', cx, cy-r*.3);
+            }
+
+            // تحريك سلس
+            const diff=this.tgt-this.cur;
+            this.cur += Math.abs(diff)>.01 ? diff*.08 : diff;
+
+            this.id=requestAnimationFrame(()=>this.draw());
+        }
+        start(){ if(!this.id) this.draw(); }
+        stop(){ if(this.id){cancelAnimationFrame(this.id);this.id=null;} }
+    }
+
+    // =============================================
+    // محرك اختبار السرعة
+    // =============================================
+    class SpeedTest {
+        constructor(){
+            this.running=false;
+            this.onProgress=null; this.onPhase=null;
+            this.onComplete=null; this.onError=null;
+        }
+        async start(){
+            if(this.running) return;
+            this.running=true;
+            try {
+                this.onPhase?.('ping');
+                const ping=await this._ping();
+                if(!this.running) return;
+
+                this.onPhase?.('download');
+                const dl=await this._download();
+                if(!this.running) return;
+
+                this.onPhase?.('upload');
+                const ul=await this._upload();
+                if(!this.running) return;
+
+                this.running=false;
+                this.onComplete?.({ping:ping.ping, jitter:ping.jitter, download:dl.speed, upload:ul.speed});
+            } catch(e) {
+                this.running=false;
+                this.onError?.(e.message||'حدث خطأ أثناء الاختبار');
+            }
+        }
+        stop(){ this.running=false; }
+
+        /* اختبار البينق */
+        async _ping() {
+            const t=[];
+            for(let i=0;i<20;i++) {
+                if(!this.running) break;
+                const s=performance.now();
+                try {
+                    await fetch('https://speed.cloudflare.com/__down?bytes=0',{cache:'no-store',mode:'cors'});
+                    t.push(performance.now()-s);
+                } catch(e){}
+            }
+            if(t.length<3) return {ping:0,jitter:0};
+            t.sort((a,b)=>a-b);
+            const tr=t.slice(Math.floor(t.length*.2), Math.ceil(t.length*.8));
+            const avg=tr.reduce((a,b)=>a+b,0)/tr.length;
+            const v=tr.reduce((s,x)=>s+Math.pow(x-avg,2),0)/tr.length;
+            return {ping:Math.round(avg*10)/10, jitter:Math.round(Math.sqrt(v)*10)/10};
+        }
+
+        /* اختبار التحميل */
+        async _download() {
+            const sizes=[100000,500000,1000000,2000000,5000000,10000000,25000000];
+            const speeds=[];
+            for(const sz of sizes) {
+                if(!this.running) break;
+                const con=Math.min(4,Math.max(2,Math.floor(sz/2000000)+1));
+                const chunk=Math.floor(sz/con);
+                const s=performance.now();
+                const ps=[];
+                for(let i=0;i<con;i++) {
+                    ps.push(
+                        fetch(`https://speed.cloudflare.com/__down?bytes=${chunk}&_=${Date.now()}${i}`,{cache:'no-store',mode:'cors'})
+                        .then(r=>r.arrayBuffer()).then(b=>b.byteLength).catch(()=>0)
+                    );
+                }
+                const res=await Promise.all(ps);
+                const el=(performance.now()-s)/1000;
+                const bytes=res.reduce((a,b)=>a+b,0);
+                if(bytes>0&&el>0) {
+                    const spd=(bytes*8)/(el*1000000);
+                    speeds.push(spd);
+                    this.onProgress?.('download',spd,speeds.length);
+                    if(spd<5&&sz>5000000) break;
+                    if(spd<20&&sz>15000000) break;
+                }
+                await new Promise(r=>setTimeout(r,40));
+            }
+            const rc=speeds.slice(-3);
+            return {speed:Math.round((rc.length?rc.reduce((a,b)=>a+b,0)/rc.length:speeds[0]||0)*100)/100};
+        }
+
+        /* اختبار الرفع */
+        async _upload() {
+            const sizes=[100000,500000,1000000,2000000,5000000];
+            const speeds=[];
+            for(const sz of sizes) {
+                if(!this.running) break;
+                const data=new Blob([new Uint8Array(sz).fill(65)]);
+                const s=performance.now();
+                try {
+                    const ac=new AbortController();
+                    const tid=setTimeout(()=>ac.abort(),15000);
+                    await fetch('https://speed.cloudflare.com/__up',{method:'POST',body:data,mode:'cors',signal:ac.signal});
+                    clearTimeout(tid);
+                    const el=(performance.now()-s)/1000;
+                    const spd=(sz*8)/(el*1000000);
+                    speeds.push(spd);
+                    this.onProgress?.('upload',spd,speeds.length);
+                    if(spd<5&&sz>2000000) break;
+                } catch(e){ if(e.name==='AbortError') break; }
+                await new Promise(r=>setTimeout(r,40));
+            }
+            const rc=speeds.slice(-3);
+            return {speed:Math.round((rc.length?rc.reduce((a,b)=>a+b,0)/rc.length:speeds[0]||0)*100)/100};
+        }
+    }
+
+    // =============================================
+    // التطبيق الرئيسي
+    // =============================================
+    const $=id=>document.getElementById(id);
+
+    const gauge=new SpeedGauge($('gaugeCanvas'));
+    gauge.start();
+    new ParticleBG($('particleCanvas'));
+
+    const tester=new SpeedTest();
+    const history=[];
+
+    // حقول معلومات IP
+    const ipFields=[
+        {key:'ip',label:'عنوان IP',icon:'fa-network-wired'},
+        {key:'isp',label:'مزود الخدمة',icon:'fa-building'},
+        {key:'country',label:'البلد',icon:'fa-flag'},
+        {key:'city',label:'المدينة',icon:'fa-city'},
+        {key:'region',label:'المنطقة',icon:'fa-map-location-dot'},
+        {key:'timezone',label:'المنطقة الزمنية',icon:'fa-clock'}
+    ];
+
+    /* عرض هيكل تحميل IP */
+    function showIpSkeleton() {
+        $('ipInfoGrid').innerHTML=ipFields.map(f=>`
+            <div class="glass-card p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas ${f.icon} text-xs" style="color:var(--accent)"></i>
+                    <span class="text-xs" style="color:var(--muted)">${f.label}</span>
+                </div>
+                <div class="info-skeleton"></div>
+            </div>`).join('');
+    }
+
+    /* عرض بيانات IP */
+    function showIpData(info) {
+        $('ipInfoGrid').innerHTML=ipFields.map(f=>`
+            <div class="glass-card p-4" style="animation:popIn .4s ease">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas ${f.icon} text-xs" style="color:var(--accent)"></i>
+                    <span class="text-xs" style="color:var(--muted)">${f.label}</span>
+                </div>
+                <div class="text-sm font-bold truncate" title="${info[f.key]}">${info[f.key]}</div>
+            </div>`).join('');
+    }
+
+    /* جلب معلومات IP مع بديل */
+    async function fetchIp() {
+        showIpSkeleton();
+        const tryFetch=async(url,parser)=>{try{const r=await fetch(url);const d=await r.json();return parser(d);}catch(e){return null;}};
+
+        let info=await tryFetch('https://ipwho.is/', d=>{
+            if(d.success===false) return null;
+            return {
+                ip:d.ip||'--',
+                isp:d.connection?.isp||d.connection?.org||'--',
+                country:`${d.country||'--'} ${d.flag?.emoji||''}`.trim(),
+                city:d.city||'--', region:d.region||'--',
+                timezone:d.timezone?.id||'--'
+            };
+        });
+
+        if(!info) info=await tryFetch('https://ipapi.co/json/', d=>({
+            ip:d.ip||'--', isp:d.org||'--', country:d.country_name||'--',
+            city:d.city||'--', region:d.region||'--', timezone:d.timezone||'--'
+        }));
+
+        if(info) showIpData(info);
+        else $('ipInfoGrid').innerHTML=`
+            <div class="glass-card p-4 col-span-full text-center">
+                <i class="fas fa-triangle-exclamation text-lg mb-2" style="color:#ffaa00"></i>
+                <p class="text-sm" style="color:var(--muted)">تعذر جلب معلومات الشبكة - تحقق من اتصالك</p>
+            </div>`;
+    }
+
+    /* ضبط المرحلة */
+    function setPhase(ph) {
+        gauge.setPhase(ph);
+        const order=['ping','download','upload'];
+        const ci=order.indexOf(ph);
+        order.forEach((p,i)=>{
+            const el=$('phase'+p.charAt(0).toUpperCase()+p.slice(1));
+            el.className='phase-dot'+(i<ci?' done':i===ci?' active':'');
+        });
+        const txt={idle:'اضغط لبدء اختبار السرعة',ping:'جاري فحص البينق...',download:'جاري قياس سرعة التحميل...',upload:'جاري قياس سرعة الرفع...',complete:'اكتمل الاختبار بنجاح'};
+        $('phaseText').textContent=txt[ph]||'';
+    }
+
+    /* إعادة تعيين النتائج */
+    function resetResults() {
+        ['downloadValue','uploadValue','pingValue','jitterValue'].forEach(id=>$(id).textContent='--');
+        $('ratingSection').style.display='none';
+        document.querySelectorAll('.result-card').forEach(c=>c.classList.remove('visible'));
+    }
+
+    /* إظهار بطاقات النتائج */
+    function showCards() {
+        document.querySelectorAll('.result-card').forEach((c,i)=>setTimeout(()=>c.classList.add('visible'),i*120));
+    }
+
+    /* إضافة للسجل */
+    function addHistory(r) {
+        const t=new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        const rt=getSpeedRating(r.download);
+        history.unshift({time:t,dl:r.download,ul:r.upload,ping:r.ping,rating:rt});
+        if(history.length>8) history.pop();
+        $('historySection').style.display='block';
+        $('historyBody').innerHTML=history.map(h=>`
+            <tr class="history-row" style="border-bottom:1px solid var(--border)">
+                <td class="p-3" style="color:var(--muted);font-size:12px">${h.time}</td>
+                <td class="p-3 font-bold" style="color:var(--accent);font-family:Orbitron;font-size:13px">${h.dl}</td>
+                <td class="p-3 font-bold" style="color:var(--accent2);font-family:Orbitron;font-size:13px">${h.ul}</td>
+                <td class="p-3 font-bold" style="color:#ffaa00;font-family:Orbitron;font-size:13px">${h.ping}</td>
+                <td class="p-3"><span class="speed-rating text-xs" style="font-size:11px;padding:2px 10px">${h.rating.text}</span></td>
+            </tr>`).join('');
+    }
+
+    // ===== ربط الأحداث =====
+
+    tester.onPhase=ph=>setPhase(ph);
+
+    tester.onProgress=(phase,spd)=>{
+        if(phase==='download'||phase==='upload') {
+            gauge.setValue(spd);
+            const nm=getNiceMax(spd);
+            if(nm>gauge.max) gauge.setMax(nm);
+        }
+    };
+
+    tester.onComplete=r=>{
+        setPhase('complete');
+        gauge.setPhase('complete');
+        gauge.setValue(r.download);
+        $('downloadValue').textContent=r.download.toFixed(2);
+        $('uploadValue').textContent=r.upload.toFixed(2);
+        $('pingValue').textContent=r.ping.toFixed(1);
+        $('jitterValue').textContent=r.jitter.toFixed(1);
+        const rt=getSpeedRating(r.download);
+        $('speedRating').textContent=rt.text;
+        $('speedRating').className='speed-rating '+rt.cls;
+        $('ratingSection').style.display='block';
+        showCards(); addHistory(r);
+        $('startBtn').classList.remove('testing');
+        $('btnText').innerHTML='ابدأ<br>الاختبار';
+        showToast('تم اختبار السرعة بنجاح');
+    };
+
+    tester.onError=msg=>{
+        setPhase('idle'); gauge.reset();
+        $('startBtn').classList.remove('testing');
+        $('btnText').innerHTML='ابدأ<br>الاختبار';
+        showToast(msg,4500);
+    };
+
+    $('startBtn').addEventListener('click',async()=>{
+        if(tester.running) {
+            tester.stop(); setPhase('idle'); gauge.reset();
+            $('startBtn').classList.remove('testing');
+            $('btnText').innerHTML='ابدأ<br>الاختبار';
+            showToast('تم إيقاف الاختبار');
+            return;
+        }
+        $('startBtn').classList.add('testing');
+        $('btnText').innerHTML='إيقاف<br>الاختبار';
+        resetResults(); gauge.reset(); gauge.setMax(100);
+        await tester.start();
+    });
+
+    $('refreshIpBtn').addEventListener('click',()=>{fetchIp();showToast('جاري تحديث معلومات الشبكة...');});
+    $('refreshIpBtn').addEventListener('mouseenter',function(){this.style.borderColor='rgba(0,229,255,.4)';this.style.color='var(--accent)';});
+    $('refreshIpBtn').addEventListener('mouseleave',function(){this.style.borderColor='var(--border)';this.style.color='var(--muted)';});
+
+    // ===== التهيئة =====
+    fetchIp();
+    showCards();
+    </script>
+</body>
+</html>
