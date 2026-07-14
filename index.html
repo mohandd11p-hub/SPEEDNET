@@ -4,94 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SpeedPulse - فحص سرعة الإنترنت</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --bg: #060b18;
-            --bg-card: rgba(12, 20, 40, 0.75);
-            --fg: #e8edf5;
-            --muted: #5a6a85;
-            --accent: #00e5ff;
-            --accent2: #00ff88;
-            --border: rgba(0, 229, 255, 0.18);
+            --bg: #050a15;
+            --card-bg: rgba(12, 22, 45, 0.75);
+            --border: rgba(0, 229, 255, 0.2);
+            --cyan: #00e5ff;
+            --green: #00ff88;
+            --text-muted: #64748b;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: var(--bg);
-            color: var(--fg);
+            background-color: var(--bg);
+            color: #f1f5f9;
             min-height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-
         .bg-grid {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image:
-                linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+            background-image: linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
-
         .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 14px;
         }
-
         .start-btn {
-            width: 120px; height: 120px; border-radius: 50%;
-            border: 3px solid var(--accent);
-            background: rgba(0,229,255,.1); color: var(--accent);
-            font-size: 18px; font-weight: 800; cursor: pointer;
-            transition: all .3s ease; outline: none;
-            box-shadow: 0 0 20px rgba(0,229,255,.2);
-            display: flex; align-items: center; justify-content: center; text-align: center;
-        }
-        .start-btn:hover, .start-btn:active {
-            transform: scale(1.05);
-            box-shadow: 0 0 35px rgba(0,229,255,.4);
-            background: rgba(0,229,255,.2);
-        }
-        .start-btn.testing {
-            border-color: #ff3366; color: #ff3366;
-            background: rgba(255,51,102,.12);
-            box-shadow: 0 0 25px rgba(255,51,102,.3);
-        }
-
-        .result-val {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem; font-weight: 800;
-        }
-
-        .phase-step {
-            font-size: 0.85rem; color: var(--muted); transition: all .3s;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .phase-step.active { color: var(--accent); font-weight: bold; }
-        .phase-step.done { color: var(--accent2); }
-    </style>
-</head>
-<body>
-    <div class="bg-grid"></div>
-
-    <div class="relative z-10 min-h-screen flex flex-col justify-between max-w-4xl mx-auto px-4">
-        <header class="text-center pt-6 pb-2">
-            <div class="flex items-center justify-center gap-2 mb-1">
-                <i class="fas fa-bolt text-2xl text-cyan-400"></i>
-                <h1 class="text-3xl font-black text-cyan-400 tracking-wider" style="font-family:'Orbitron',sans-serif">
-                    SpeedPulse
-                </h1>
-            </div>
-            <p class="text-xs text-slate-400">فحص دقيق لسرعة الإنترنت الحقيقية بدون كاش محلي</p>
-        </header>
-
-        <main class="w-full my-auto py-4">
-            <div class="flex flex-col items-center mb-6">
-                <div class="relative w-64 h-64 flex items-center justify-center">
-                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="42" stroke="
+            width: 130px; height: 130px; border-radius: 50%;
+            border: 3px solid var(--cyan);
+            background: radial
