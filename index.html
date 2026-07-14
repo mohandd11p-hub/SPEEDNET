@@ -2,84 +2,63 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UROXA | AI Platform</title>
+    <title>UROXA | Next-Gen AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap');
-        body { font-family: 'Tajawal', sans-serif; background: #020617; }
-        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.2); }
-        .active-nav { background: rgba(56, 189, 248, 0.2); border-right: 4px solid #38bdf8; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; }
+        
+        /* تأثير الخلفية الفاخر */
+        .mesh-gradient {
+            background: radial-gradient(circle at 70% 30%, rgba(56, 189, 248, 0.15), transparent),
+                        radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.15), transparent);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-glow { box-shadow: 0 0 40px rgba(56, 189, 248, 0.2); }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden text-slate-200">
+<body class="mesh-gradient h-screen overflow-hidden flex">
 
-    <!-- الشريط الجانبي -->
-    <aside class="w-20 lg:w-72 glass-panel flex flex-col p-4">
-        <div class="text-sky-400 text-3xl font-black mb-10 text-center">UROXA</div>
-        <nav class="space-y-4">
-            <button onclick="showPage('chat')" id="btn-chat" class="flex items-center gap-4 w-full p-3 rounded-xl active-nav">
-                <span class="text-2xl">🤖</span> <span class="hidden lg:block">الدردشة</span>
-            </button>
-            <button onclick="showPage('speed')" id="btn-speed" class="flex items-center gap-4 w-full p-3 rounded-xl hover:bg-sky-500/10">
-                <span class="text-2xl">⚡</span> <span class="hidden lg:block">فحص السرعة</span>
-            </button>
-        </nav>
-    </aside>
-
-    <!-- منطقة المحتوى -->
-    <main class="flex-1 flex flex-col p-4 lg:p-8">
-        <!-- صفحة الدردشة -->
-        <div id="page-chat" class="flex-1 flex flex-col h-full">
-            <div id="chat-window" class="flex-1 glass-panel rounded-3xl p-6 mb-6 overflow-y-auto">
-                <div class="flex gap-4 mb-6">
-                    <div class="w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center font-bold">U</div>
-                    <div class="bg-slate-800 p-4 rounded-2xl">أهلاً بك في UROXA. كيف أساعدك اليوم؟</div>
-                </div>
+    <aside class="w-20 lg:w-64 border-l border-white/10 p-6 flex flex-col items-center lg:items-start justify-between">
+        <div class="text-2xl font-black text-sky-400 italic tracking-tighter">UROXA.AI</div>
+        <div class="space-y-6 w-full">
+            <div class="flex items-center gap-4 text-sky-400 bg-white/5 p-3 rounded-2xl cursor-pointer">
+                <span>⚡</span><span class="hidden lg:block font-bold">Network</span>
             </div>
-            <div class="glass-panel rounded-2xl p-2 flex gap-2">
-                <input id="chat-input" type="text" placeholder="اكتب استفسارك..." class="flex-1 bg-transparent p-3 outline-none">
-                <button onclick="sendMessage()" class="bg-sky-500 hover:bg-sky-600 px-6 py-2 rounded-xl">إرسال</button>
+            <div class="flex items-center gap-4 hover:bg-white/5 p-3 rounded-2xl cursor-pointer transition">
+                <span>🧠</span><span class="hidden lg:block">Intelligence</span>
             </div>
         </div>
+        <div class="text-[10px] text-white/30 hidden lg:block">Version 2.0.0</div>
+    </aside>
 
-        <!-- صفحة فحص السرعة (مخفية افتراضياً) -->
-        <div id="page-speed" class="hidden flex-1 flex flex-col items-center justify-center glass-panel rounded-3xl p-8">
-            <h2 class="text-3xl font-bold mb-8">اختبار سرعة UROXA</h2>
-            <div id="speed-value" class="text-6xl font-black text-sky-400 mb-6">0.0</div>
-            <p class="mb-8">Mbps</p>
-            <button onclick="startSpeedTest()" class="bg-sky-500 hover:bg-sky-600 px-12 py-4 rounded-full font-bold">ابدأ الفحص</button>
+    <main class="flex-1 p-8 flex flex-col">
+        <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col gap-6">
+            
+            <div class="glass-card p-8 rounded-[2rem] ai-glow">
+                <h2 class="text-4xl font-extrabold mb-2">كيف يمكنني مساعدتك؟</h2>
+                <p class="text-white/50 text-sm">UROXA - نظام ذكاء اصطناعي متكامل للتحليل والأداء.</p>
+            </div>
+
+            <div id="display-area" class="flex-1 glass-card rounded-[2rem] p-6 flex items-center justify-center">
+                <div class="text-center text-white/30">
+                    <div class="text-6xl mb-4">🚀</div>
+                    <p>جاهز للعمل...</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-2 rounded-full flex items-center shadow-2xl">
+                <input type="text" placeholder="اطلب من UROXA تحليل شيء..." class="flex-1 bg-transparent px-6 py-4 outline-none">
+                <button class="bg-sky-500 text-black font-bold px-8 py-3 rounded-full hover:bg-sky-400 transition">إرسال</button>
+            </div>
         </div>
     </main>
 
-    <script>
-        // منطق التبديل بين الصفحات
-        function showPage(page) {
-            document.getElementById('page-chat').classList.toggle('hidden', page !== 'chat');
-            document.getElementById('page-speed').classList.toggle('hidden', page !== 'speed');
-            document.getElementById('btn-chat').classList.toggle('active-nav', page === 'chat');
-            document.getElementById('btn-speed').classList.toggle('active-nav', page === 'speed');
-        }
-
-        // منطق الدردشة
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            if (!input.value) return;
-            const chat = document.getElementById('chat-window');
-            chat.innerHTML += `<div class="flex flex-row-reverse gap-4 mb-6"><div class="bg-sky-900 p-4 rounded-2xl">${input.value}</div></div>`;
-            input.value = "";
-        }
-
-        // منطق فحص السرعة
-        function startSpeedTest() {
-            const speedEl = document.getElementById('speed-value');
-            let speed = 0;
-            const interval = setInterval(() => {
-                speed += Math.random() * 10;
-                speedEl.textContent = speed.toFixed(1);
-                if (speed >= 85) clearInterval(interval);
-            }, 100);
-        }
-    </script>
 </body>
 </html>
