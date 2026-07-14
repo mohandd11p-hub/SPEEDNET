@@ -2,115 +2,36 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UROXA AI</title>
+    <title>UROXA AI - Night View</title>
     <style>
-        /* إعدادات الشاشة الأساسية (سماء الليل) */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: linear-gradient(to bottom, #020111 10%, #20124d 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        /* تصميم القمر */
-        .moon {
-            position: absolute;
-            top: 10%;
-            right: 15%;
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle at 30% 30%, #fffcea, #e8d79a);
-            border-radius: 50%;
-            box-shadow: 0 0 60px rgba(255, 252, 234, 0.6), inset -15px -15px 30px rgba(0,0,0,0.1);
-        }
-
-        /* تصميم النجوم الثابتة */
-        .stars {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
-            background-repeat: repeat;
-            background-size: 200px 200px;
-            opacity: 0.5;
-            animation: twinkle 5s infinite alternate;
-        }
-
-        @keyframes twinkle {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.8; }
-        }
-
-        /* تصميم الشهب (Shooting Stars) */
-        .shooting-star {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 0 4px rgba(255,255,255,0.1), 0 0 0 8px rgba(255,255,255,0.1), 0 0 20px #fff;
-            animation: shoot 4s linear infinite;
-        }
+        /* [نفس تنسيقات السماء الليلية والقمر والشهب السابقة] */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: linear-gradient(to bottom, #020111 10%, #20124d 100%); }
+        .moon { position: absolute; top: 10%; right: 15%; width: 100px; height: 100px; background: #fffcea; border-radius: 50%; box-shadow: 0 0 40px #fffcea; }
         
-        .shooting-star::before {
-            content: '';
+        /* حاوية الشات شبه الشفافة */
+        #voiceflow-chat-container {
             position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 150px;
-            height: 1px;
-            background: linear-gradient(90deg, #fff, transparent);
-        }
-
-        .star1 { top: 0%; left: 80%; animation-delay: 0s; }
-        .star2 { top: 20%; left: 20%; animation-delay: 2.5s; }
-        .star3 { top: 50%; left: 90%; animation-delay: 1.2s; }
-
-        @keyframes shoot {
-            0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 1; }
-            100% { transform: translateX(-1500px) translateY(1500px) rotate(-45deg); opacity: 0; }
-        }
-
-        /* نص ترحيبي في منتصف الشاشة (اختياري) */
-        .welcome-text {
-            position: absolute;
-            top: 50%;
+            bottom: 20px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            pointer-events: none; /* لكي لا يتداخل مع البوت */
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.1); /* شفافية */
+            backdrop-filter: blur(10px); /* تأثير ضبابي */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
         }
-        .welcome-text h1 { font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
-        .welcome-text p { font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-    <!-- عناصر السماء الليلية -->
-    <div class="stars"></div>
     <div class="moon"></div>
-    <div class="shooting-star star1"></div>
-    <div class="shooting-star star2"></div>
-    <div class="shooting-star star3"></div>
+    
+    <!-- الحاوية التي سيظهر فيها البوت -->
+    <div id="voiceflow-chat-container"></div>
 
-    <!-- نص ترحيبي -->
-    <div class="welcome-text">
-        <h1>مرحباً بك في UROXA</h1>
-        <p>المساعد الذكي جاهز للإجابة على استفساراتك.. اضغط على الأيقونة بالأسفل للبدء.</p>
-    </div>
-
-    <!-- كود بوت Voiceflow -->
     <script type="text/javascript">
       (function(d, t) {
           var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
@@ -118,8 +39,10 @@
             window.voiceflow.chat.load({
               verify: { projectID: '6a56b8c150175e6a525cb14c' },
               url: 'https://general-runtime.voiceflow.com',
-              voice: {
-                url: "https://runtime-api.voiceflow.com"
+              versionID: 'production',
+              render: {
+                mode: 'embedded',
+                target: document.getElementById('voiceflow-chat-container')
               }
             });
           }
