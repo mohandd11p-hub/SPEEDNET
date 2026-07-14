@@ -1,69 +1,23 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>UROXA AI - Night View</title>
-    <style>
-        /* [نفس تنسيقات السماء الليلية والقمر والشهب السابقة] */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: linear-gradient(to bottom, #020111 10%, #20124d 100%); }
-        .moon { position: absolute; top: 10%; right: 15%; width: 100px; height: 100px; background: #fffcea; border-radius: 50%; box-shadow: 0 0 40px #fffcea; }
-        
-        /* حاوية الشات شبه الشفافة */
-        #voiceflow-chat-container {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 450px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.1); /* شفافية */
-            backdrop-filter: blur(10px); /* تأثير ضبابي */
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            overflow: hidden;
-        }
-    </style>
+    <title>UROXA AI</title>
 </head>
-<body>
-
-    <div class="moon"></div>
-    
-    <!-- الحاوية التي سيظهر فيها البوت -->
-    
+<body style="background: #020111; margin: 0;">
 
     <script type="text/javascript">
-  (function(d, t) {
-      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-      v.onload = function() {
-        window.voiceflow.chat.load({
-          verify: { projectID: '6a56b8c150175e6a525cb14c' },
-          url: 'https://general-runtime.voiceflow.com',
-          versionID: 'production',
-          autostart: true,
-          // التنسيق المدمج ليظهر بشكل شفاف وأنيق
-          render: {
-            mode: 'overlay'
-          },
-          style: {
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            width: '400px',
-            height: '600px',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)'
+      (function(d, t) {
+          var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+          v.onload = function() {
+            window.voiceflow.chat.load({
+              verify: { projectID: '6a56b8c150175e6a525cb14c' },
+              url: 'https://general-runtime.voiceflow.com',
+              versionID: 'production'
+            });
           }
-        });
-      }
-      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; 
-      v.type = "text/javascript"; 
-      s.parentNode.insertBefore(v, s);
-  })(document, 'script');
-</script>
-
+          v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+      })(document, 'script');
+    </script>
 
 </body>
 </html>
