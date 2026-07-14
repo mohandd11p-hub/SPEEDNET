@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SpeedPulse - فحص سرعة الإنترنت الحقيقي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>SpeedPulse - فحص سرعة الإنترنت</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --bg: #060b18;
-            --bg-card: rgba(12, 20, 40, 0.7);
+            --bg-card: rgba(12, 20, 40, 0.75);
             --fg: #e8edf5;
             --muted: #5a6a85;
             --accent: #00e5ff;
             --accent2: #00ff88;
             --border: rgba(0, 229, 255, 0.18);
-            --glow: rgba(0, 229, 255, 0.15);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -28,16 +27,13 @@
             overflow-x: hidden;
         }
 
-        /* خلفية شبكية متحركة */
         .bg-grid {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background-image:
                 linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-size: 40px 40px;
         }
-        #particleCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        .content { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
         .glass-card {
             background: var(--bg-card);
@@ -45,133 +41,198 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--border);
             border-radius: 16px;
-            transition: all .3s ease;
-        }
-        .glass-card:hover {
-            border-color: rgba(0,229,255,.3);
-            box-shadow: 0 0 25px var(--glow);
         }
 
-        /* زر البدء بطراز Speedtest */
         .start-btn {
-            position: relative; width: 135px; height: 135px;
-            border-radius: 50%; border: 3px solid var(--accent);
-            background: rgba(0,229,255,.08); color: var(--accent);
-            font-family: 'Tajawal', sans-serif; font-size: 18px;
-            font-weight: 800; cursor: pointer; transition: all .3s ease;
-            outline: none; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 3px solid var(--accent);
+            background: rgba(0,229,255,.1); color: var(--accent);
+            font-size: 18px; font-weight: 800; cursor: pointer;
+            transition: all .3s ease; outline: none;
+            box-shadow: 0 0 20px rgba(0,229,255,.2);
         }
         .start-btn:hover {
-            background: rgba(0,229,255,.18);
-            box-shadow: 0 0 45px rgba(0,229,255,.35);
             transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(0,229,255,.4);
+            background: rgba(0,229,255,.2);
         }
         .start-btn.testing {
             border-color: #ff3366; color: #ff3366;
-            background: rgba(255,51,102,.1);
-            animation: none;
+            background: rgba(255,51,102,.12);
+            box-shadow: 0 0 25px rgba(255,51,102,.3);
         }
 
-        .result-value {
+        .result-val {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.1rem; font-weight: 800; line-height: 1.1;
+            font-size: 1.8rem; font-weight: 800;
         }
 
-        /* مؤشر المراحل المتسلسلة */
         .phase-step {
-            display: flex; align-items: center; gap: 8px;
             font-size: 0.85rem; color: var(--muted); transition: all .3s;
+            display: flex; align-items: center; gap: 6px;
         }
         .phase-step.active { color: var(--accent); font-weight: bold; }
         .phase-step.done { color: var(--accent2); }
-
-        .speed-rating {
-            display: inline-block; padding: 6px 24px;
-            border-radius: 20px; font-weight: 700; font-size: 15px;
-        }
-        .rating-excellent { background:rgba(0,255,136,.15); color:#00ff88; border:1px solid rgba(0,255,136,.3); }
-        .rating-good { background:rgba(0,229,255,.15); color:#00e5ff; border:1px solid rgba(0,229,255,.3); }
-        .rating-fair { background:rgba(255,170,0,.15); color:#ffaa00; border:1px solid rgba(255,170,0,.3); }
-        .rating-poor { background:rgba(255,51,102,.15); color:#ff3366; border:1px solid rgba(255,51,102,.3); }
     </style>
 </head>
 <body>
     <div class="bg-grid"></div>
-    <canvas id="particleCanvas"></canvas>
 
-    <div class="content justify-between">
-        <header class="text-center pt-8 pb-2 px-4">
-            <div class="flex items-center justify-center gap-3 mb-1">
-                <i class="fas fa-gauge-high text-2xl" style="color:var(--accent)"></i>
-                <h1 class="text-3xl md:text-4xl font-black tracking-wide" style="font-family:'Orbitron',sans-serif;color:var(--accent)">
+    <div class="relative z-10 min-h-screen flex flex-col justify-between max-w-4xl mx-auto px-4">
+        <header class="text-center pt-6 pb-2">
+            <div class="flex items-center justify-center gap-2 mb-1">
+                <i class="fas fa-bolt text-2xl text-cyan-400"></i>
+                <h1 class="text-3xl font-black text-cyan-400 tracking-wider" style="font-family:'Orbitron',sans-serif">
                     SpeedPulse
                 </h1>
             </div>
-            <p class="text-xs md:text-sm" style="color:var(--muted)">فحص سرعة الإنترنت الحي المباشر (Speedtest Engine)</p>
+            <p class="text-xs text-slate-400">فحص دقيق لسرعة الإنترنت الحقيقية بدون كاش محلي</p>
         </header>
 
-        <main class="max-w-4xl mx-auto px-4 pb-8 w-full">
-            <section class="flex flex-col items-center mb-6">
-                <div class="relative" style="width:340px;height:340px;max-width:85vw;max-height:85vw">
-                    <canvas id="gaugeCanvas" style="width:100%;height:100%"></canvas>
+        <main class="w-full my-auto py-4">
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative w-64 h-64 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.06)" stroke-width="6" fill="transparent" />
+                        <circle id="gaugeProgress" cx="50" cy="50" r="42" stroke="url(#gaugeGrad)" stroke-width="6" 
+                                stroke-dasharray="263.89" stroke-dashoffset="263.89" stroke-linecap="round" fill="transparent" 
+                                style="transition: stroke-dashoffset 0.15s linear;" />
+                        <defs>
+                            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00e5ff" />
+                                <stop offset="100%" stop-color="#00ff88" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span id="gaugeValue" class="text-4xl font-black text-cyan-400" style="font-family:'Orbitron',sans-serif">0.0</span>
+                        <span class="text-xs text-slate-400 font-bold mt-1">Mbps</span>
+                    </div>
                 </div>
-                
-                <div class="relative -mt-12 mb-4">
+
+                <div class="-mt-8 mb-4 relative z-20">
                     <button id="startBtn" class="start-btn" onclick="toggleTest()">
-                        <span id="btnText">ابدأ</span>
+                        <span id="btnText">ابدأ<br>الاختبار</span>
                     </button>
                 </div>
 
-                <div class="flex gap-6 my-2">
-                    <div class="phase-step" id="stepPing"><i class="fas fa-signal"></i> <span>البينغ</span></div>
-                    <div class="phase-step" id="stepDownload"><i class="fas fa-arrow-down"></i> <span>التحميل</span></div>
-                    <div class="phase-step" id="stepUpload"><i class="fas fa-arrow-up"></i> <span>الرفع</span></div>
+                <div class="flex items-center gap-6 my-2">
+                    <div id="stepPing" class="phase-step"><i class="fas fa-signal"></i> البينغ</div>
+                    <div id="stepDownload" class="phase-step"><i class="fas fa-arrow-down"></i> التحميل</div>
+                    <div id="stepUpload" class="phase-step"><i class="fas fa-arrow-up"></i> الرفع</div>
                 </div>
-                <p id="statusMsg" class="text-xs mt-1" style="color:var(--muted)">اضغط ابدأ لبدء الاختبار التتابعي</p>
-            </section>
-
-            <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div class="glass-card p-4 text-center">
-                    <div class="text-xs mb-2" style="color:var(--muted)"><i class="fas fa-arrow-down ml-1" style="color:var(--accent)"></i>التحميل</div>
-                    <div class="result-value" style="color:var(--accent)" id="downloadVal">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">Mbps</div>
-                </div>
-                <div class="glass-card p-4 text-center">
-                    <div class="text-xs mb-2" style="color:var(--muted)"><i class="fas fa-arrow-up ml-1" style="color:var(--accent2)"></i>الرفع</div>
-                    <div class="result-value" style="color:var(--accent2)" id="uploadVal">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">Mbps</div>
-                </div>
-                <div class="glass-card p-4 text-center">
-                    <div class="text-xs mb-2" style="color:var(--muted)"><i class="fas fa-stopwatch ml-1" style="color:#ffaa00"></i>البينغ</div>
-                    <div class="result-value" style="color:#ffaa00" id="pingVal">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">ms</div>
-                </div>
-                <div class="glass-card p-4 text-center">
-                    <div class="text-xs mb-2" style="color:var(--muted)"><i class="fas fa-wave-square ml-1" style="color:#c084fc"></i>الاهتزاز</div>
-                    <div class="result-value" style="color:#c084fc" id="jitterVal">--</div>
-                    <div class="text-xs mt-1" style="color:var(--muted)">ms</div>
-                </div>
-            </section>
-
-            <div class="text-center mb-8" id="ratingBox" style="display:none">
-                <span class="speed-rating" id="ratingText"></span>
+                <p id="statusMsg" class="text-xs text-slate-400 mt-1">اضغط ابدأ لبدء الاختبار</p>
             </div>
 
-            <section class="mb-8">
-                <h2 class="text-md font-bold mb-3 flex items-center gap-2">
-                    <i class="fas fa-network-wired text-sm" style="color:var(--accent)"></i> معلومات الشبكة
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="glass-card p-4 text-center">
+                    <div class="text-xs text-slate-400 mb-2"><i class="fas fa-arrow-down text-cyan-400 ml-1"></i>التحميل</div>
+                    <div class="result-val text-cyan-400" id="dlVal">--</div>
+                    <div class="text-xs text-slate-500 mt-1">Mbps</div>
+                </div>
+                <div class="glass-card p-4 text-center">
+                    <div class="text-xs text-slate-400 mb-2"><i class="fas fa-arrow-up text-emerald-400 ml-1"></i>الرفع</div>
+                    <div class="result-val text-emerald-400" id="ulVal">--</div>
+                    <div class="text-xs text-slate-500 mt-1">Mbps</div>
+                </div>
+                <div class="glass-card p-4 text-center">
+                    <div class="text-xs text-slate-400 mb-2"><i class="fas fa-stopwatch text-amber-400 ml-1"></i>البينغ</div>
+                    <div class="result-val text-amber-400" id="pingVal">--</div>
+                    <div class="text-xs text-slate-500 mt-1">ms</div>
+                </div>
+                <div class="glass-card p-4 text-center">
+                    <div class="text-xs text-slate-400 mb-2"><i class="fas fa-wave-square text-purple-400 ml-1"></i>الاهتزاز</div>
+                    <div class="result-val text-purple-400" id="jitterVal">--</div>
+                    <div class="text-xs text-slate-500 mt-1">ms</div>
+                </div>
+            </div>
+
+            <section class="glass-card p-4 mb-4">
+                <h2 class="text-sm font-bold text-cyan-400 mb-3 flex items-center gap-2">
+                    <i class="fas fa-globe"></i> معلومات الشبكة والاتصال
                 </h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="netInfoGrid">
-                    <div class="glass-card p-3 text-xs"><span style="color:var(--muted)">IP:</span> <span id="ipAddr">جاري التحميل...</span></div>
-                    <div class="glass-card p-3 text-xs"><span style="color:var(--muted)">المزود:</span> <span id="ispName">جاري التحميل...</span></div>
-                    <div class="glass-card p-3 text-xs"><span style="color:var(--muted)">البلد:</span> <span id="countryName">جاري التحميل...</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs" id="netGrid">
+                    <div><span class="text-slate-400">عنوان IP:</span> <span id="ipVal" class="font-bold text-slate-200">جاري التحميل...</span></div>
+                    <div><span class="text-slate-400">المزود (ISP):</span> <span id="ispVal" class="font-bold text-slate-200">جاري التحميل...</span></div>
+                    <div><span class="text-slate-400">البلد / المدينة:</span> <span id="locVal" class="font-bold text-slate-200">جاري التحميل...</span></div>
                 </div>
             </section>
         </main>
 
-        <footer class="text-center py-5 text-xs flex flex-col items-center gap-2 w-full" style="color:var(--muted); border-top:1px solid var(--border); background: rgba(5, 10, 20, 0.6)">
-            <div class="w-14 h-14 rounded-full border-2 border-[var(--accent)] overflow-hidden bg-black flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.2)]">
-                <img src="logo.png" id="uroxaLogo" alt="UROXA Logo" class="w-full h-full object-cover" onerror="this.style.display='none';document.getElementById('fallbackLogo').style.display='block';" />
-                <span id="fallbackLogo" class="hidden text-cyan-400 font-black text-base">UX</span>
+        <footer class="py-4 text-center border-t border-cyan-900/30 flex flex-col items-center gap-2">
+            <div class="w-12 h-12 rounded-full border border-cyan-400/40 bg-slate-900 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+                <img src="logo.png" alt="UROXA" class="w-full h-full object-cover" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='flex';" />
+                <div id="fallbackLogo" class="hidden w-full h-full items-center justify-center font-black text-cyan-400 text-sm bg-slate-950">UX</div>
             </div>
+            <p class="text-xs font-bold text-cyan-400">تم التطوير من فريق UROXA</p>
+        </footer>
+    </div>
+
+    <script>
+        const CIRCUMFERENCE = 263.89;
+        let isTesting = false;
+        let abortCtrl = null;
+
+        function updateGauge(mbps, maxMbps = 100) {
+            const gaugeVal = document.getElementById('gaugeValue');
+            const progress = document.getElementById('gaugeProgress');
+            
+            gaugeVal.innerText = mbps.toFixed(1);
+            
+            const ratio = Math.min(Math.max(mbps / maxMbps, 0), 1);
+            const offset = CIRCUMFERENCE - (ratio * CIRCUMFERENCE);
+            progress.style.strokeDashoffset = offset;
+        }
+
+        async function toggleTest() {
+            if (isTesting) {
+                stopTest();
+            } else {
+                startTest();
+            }
+        }
+
+        function stopTest() {
+            if (abortCtrl) abortCtrl.abort();
+            isTesting = false;
+            resetUI();
+            document.getElementById('statusMsg').innerText = 'تم إيقاف الاختبار';
+        }
+
+        function resetUI() {
+            const btn = document.getElementById('startBtn');
+            btn.classList.remove('testing');
+            document.getElementById('btnText').innerHTML = 'ابدأ<br>الاختبار';
+            document.querySelectorAll('.phase-step').forEach(el => el.className = 'phase-step');
+            updateGauge(0);
+        }
+
+        function setStep(name, status) {
+            const el = document.getElementById(`step${name}`);
+            if (el) el.className = `phase-step ${status}`;
+        }
+
+        async function startTest() {
+            isTesting = true;
+            abortCtrl = new AbortController();
+
+            const btn = document.getElementById('startBtn');
+            btn.classList.add('testing');
+            document.getElementById('btnText').innerText = 'إلغاء';
+
+            document.getElementById('dlVal').innerText = '--';
+            document.getElementById('ulVal').innerText = '--';
+            document.getElementById('pingVal').innerText = '--';
+            document.getElementById('jitterVal').innerText = '--';
+
+            try {
+                // 1. Ping
+                setStep('Ping', 'active');
+                document.getElementById('statusMsg').innerText = 'جاري قياس البينغ...';
+                const pRes = await measurePing();
+                document.getElementById('pingVal').innerText = pRes.ping;
+                document.getElementById('jitterVal').innerText = pRes.jitter;
+                setStep('Ping', 'done');
+
+                // 2. Download
+                setStep('Download', 'active');
