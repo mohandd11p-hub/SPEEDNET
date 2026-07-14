@@ -6,7 +6,7 @@
     <title>UROXA | AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0d0d0d; color: #e0e0e0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #0d0d0d; color: #e0e0e0; font-family: sans-serif; }
         .chat-container { max-width: 700px; }
         .message-box { background: #1a1a1a; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
         .input-area { background: #202020; border-radius: 28px; }
@@ -24,10 +24,10 @@
         </div>
     </div>
 
-    <div class="input-area w-full max-w-[700px] flex items-center p-2 mb-4 border border-zinc-700 focus-within:border-zinc-500 transition">
+    <div class="input-area w-full max-w-[700px] flex items-center p-2 mb-4 border border-zinc-700">
         <input id="user-input" type="text" placeholder="اكتب استفساراً..." 
                class="flex-1 bg-transparent p-3 outline-none text-white">
-        <button onclick="sendMessage()" class="p-3 bg-white text-black rounded-full hover:bg-gray-200 transition">
+        <button id="send-btn" class="p-3 bg-white text-black rounded-full hover:bg-gray-200 transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.429a1 1 0 001.169-1.409l-7-14z" />
             </svg>
@@ -35,33 +35,33 @@
     </div>
 
     <script>
-        function sendMessage() {
-            const input = document.getElementById('user-input');
-            const chatWindow = document.getElementById('chat-window');
-            const message = input.value.trim();
+        const chatWindow = document.getElementById('chat-window');
+        const input = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
 
+        function triggerResponse() {
+            const message = input.value.trim();
             if (message === "") return;
 
-            // إضافة رسالة المستخدم
-            chatWindow.innerHTML += `<div class="text-right p-4 font-bold">${message}</div>`;
-            
-            // رد آلي (محاكي لذكاء اصطناعي)
+            // 1. إضافة رسالة المستخدم
+            chatWindow.innerHTML += `<div class="text-right p-4 font-bold text-white">${message}</div>`;
+            input.value = "";
+
+            // 2. الرد الآلي
             setTimeout(() => {
                 chatWindow.innerHTML += `
                     <div class="message-box">
-                        <p class="text-sky-400">UROXA:</p>
-                        <p>لقد استلمت استفسارك حول: "${message}". أنا أعمل حالياً على تحليل البيانات المتعلقة بطلبك...</p>
+                        <p class="text-sky-400 font-bold mb-1">UROXA:</p>
+                        <p>جاري معالجة طلبك بذكاء اصطناعي... لقد تلقيت استفسارك وسأقوم بالرد فوراً.</p>
                     </div>`;
                 chatWindow.scrollTop = chatWindow.scrollHeight;
-            }, 800);
-
-            input.value = "";
+            }, 600);
+            
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        sendBtn.addEventListener('click', triggerResponse);
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') triggerResponse(); });
     </script>
 </body>
 </html>
