@@ -6,42 +6,60 @@
     <title>UROXA | AI Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; }
-        .glass-ui { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(15px); border: 1px solid #333; }
-        .ai-border { border: 1px solid #0ea5e9; box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
+        body { background-color: #020617; color: white; font-family: 'Segoe UI', sans-serif; }
+        .glass-ui { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); border: 1px solid #1e293b; }
+        .ai-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
     </style>
 </head>
 <body class="p-4 flex flex-col items-center">
 
-    <header class="w-full max-w-lg mb-6 flex justify-between items-center">
-        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">UROXA</h1>
-        <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-    </header>
+    <div class="mb-6 text-center">
+        <h1 class="text-3xl font-black text-sky-400">UROXA.AI</h1>
+        <p class="text-slate-500 text-xs">نظام الذكاء الاصطناعي المتطور</p>
+    </div>
 
-    <div class="glass-ui w-full max-w-lg p-6 rounded-3xl ai-border">
-        
-        <div class="flex gap-2 mb-6 bg-black p-1 rounded-full border border-zinc-800">
-            <button onclick="switchTab('chat')" class="flex-1 py-2 rounded-full bg-zinc-800 text-sm">الدردشة</button>
-            <button onclick="switchTab('speed')" class="flex-1 py-2 rounded-full text-sm">السرعة</button>
+    <div class="glass-ui w-full max-w-lg rounded-3xl p-6 ai-glow">
+        <!-- نافذة المحادثة -->
+        <div id="chat-window" class="h-80 overflow-y-auto mb-4 p-4 bg-slate-950 rounded-2xl border border-slate-800 text-sm space-y-4">
+            <p class="text-sky-400">UROXA: مرحباً، أنا جاهز للبدء. ماذا تريد أن نحلل اليوم؟</p>
         </div>
 
-        <div id="content" class="h-80 overflow-y-auto">
-            <p class="text-center text-zinc-500 mt-20">مرحباً بك في UROXA، ابدأ أي مهمة من الأعلى.</p>
+        <!-- حقل الإدخال -->
+        <div class="flex gap-2">
+            <input id="user-input" type="text" placeholder="اكتب سؤالك..." 
+                   class="flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700 outline-none focus:border-sky-500">
+            <button onclick="sendMessage()" class="bg-sky-500 px-6 py-2 rounded-xl font-bold text-black hover:bg-sky-400 transition">إرسال</button>
         </div>
     </div>
 
     <script>
-        function switchTab(tab) {
-            const content = document.getElementById('content');
-            if(tab === 'chat') {
-                content.innerHTML = `<div class="p-4 bg-zinc-900 rounded-2xl">UROXA: كيف يمكنني تحليل بياناتك اليوم؟</div>`;
-            } else {
-                content.innerHTML = `<div class="text-center mt-10">
-                    <div class="text-5xl font-black text-sky-500">0.0</div>
-                    <p class="text-sm mt-2">جاري فحص النطاق الترددي...</p>
-                </div>`;
-            }
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatWindow = document.getElementById('chat-window');
+            const message = input.value.trim();
+
+            if (message === "") return;
+
+            // 1. عرض رسالة المستخدم
+            chatWindow.innerHTML += `<p class="text-right text-slate-300">أنت: ${message}</p>`;
+            
+            // 2. معالجة الرد (تم إصلاح الخلل هنا)
+            setTimeout(() => {
+                const response = `UROXA: لقد قمت بمعالجة طلبك "${message}" بنجاح.`;
+                chatWindow.innerHTML += `<p class="text-sky-400 mt-2">${response}</p>`;
+                
+                // التمرير التلقائي للأسفل
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, 500);
+
+            // 3. مسح الحقل
+            input.value = "";
         }
+
+        // دعم زر Enter
+        document.getElementById('user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
     </script>
 </body>
 </html>
