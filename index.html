@@ -30,30 +30,40 @@
     <div class="moon"></div>
     
     <!-- الحاوية التي سيظهر فيها البوت -->
-    <div id="voiceflow-chat-container"></div>
+    
 
     <script type="text/javascript">
-  window.addEventListener('load', function() {
-    (function(d, t) {
-        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-        v.onload = function() {
-          window.voiceflow.chat.load({
-            verify: { projectID: '6a56b8c150175e6a525cb14c' },
-            url: 'https://general-runtime.voiceflow.com',
-            versionID: 'production',
-            autostart: true,
-            render: {
-              mode: 'embedded',
-              target: document.getElementById('voiceflow-chat-container')
-            }
-          });
-        }
-        v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; 
-        v.type = "text/javascript"; 
-        s.parentNode.insertBefore(v, s);
-    })(document, 'script');
-  });
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '6a56b8c150175e6a525cb14c' },
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production',
+          autostart: true,
+          // التنسيق المدمج ليظهر بشكل شفاف وأنيق
+          render: {
+            mode: 'overlay'
+          },
+          style: {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            width: '400px',
+            height: '600px',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)'
+          }
+        });
+      }
+      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; 
+      v.type = "text/javascript"; 
+      s.parentNode.insertBefore(v, s);
+  })(document, 'script');
 </script>
+
 
 </body>
 </html>
