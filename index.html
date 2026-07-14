@@ -21,7 +21,8 @@
     </div>
 
     <script>
-        const API_KEY = "ضع_مفتاحك_هنا"; // ضع مفتاحك الجديد هنا
+        // تم دمج المفتاح الخاص بك
+        const API_KEY = "AQ.Ab8RN6ILvAyJOhKW5oQdKPPckOPAEJltLeuF8KKQHZrk6_NxHQ"; 
         const chatWindow = document.getElementById('chat-window');
         const input = document.getElementById('user-input');
 
@@ -32,22 +33,21 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
             });
-            if (!response.ok) throw new Error("فشل الاتصال بـ API");
+            if (!response.ok) throw new Error("فشل الاتصال");
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
         }
 
-        document.getElementById('send-btn').addEventListener('click', async () => {
+        async function sendMessage() {
             const message = input.value.trim();
             if (!message) return;
 
             chatWindow.innerHTML += `<div class="text-right p-3 bg-sky-900 rounded-2xl ml-auto max-w-[80%]">${message}</div>`;
             input.value = "";
             
-            // إضافة مؤشر تحميل
             const loadingDiv = document.createElement('div');
             loadingDiv.className = "text-left p-3 text-sm text-gray-500";
-            loadingDiv.innerText = "جاري التفكير...";
+            loadingDiv.innerText = "UROXA: جاري التفكير...";
             chatWindow.appendChild(loadingDiv);
 
             try {
@@ -55,11 +55,14 @@
                 chatWindow.removeChild(loadingDiv);
                 chatWindow.innerHTML += `<div class="text-right p-3 bg-[#1a1a1a] rounded-2xl mr-auto max-w-[80%] whitespace-pre-line">UROXA: ${reply}</div>`;
             } catch (err) {
-                loadingDiv.innerText = "خطأ: تأكد من مفتاح API أو جرب مفتاحاً جديداً.";
+                loadingDiv.innerText = "خطأ: تأكد من الاتصال أو صلاحية المفتاح.";
                 loadingDiv.className = "text-red-500 p-2";
             }
             chatWindow.scrollTop = chatWindow.scrollHeight;
-        });
+        }
+
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     </script>
 </body>
 </html>
