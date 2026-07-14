@@ -33,7 +33,6 @@
         }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         
-        /* نمط الرقم الضخم مثل Fast */
         .fast-speed-number {
             font-size: clamp(4.5rem, 18vw, 7.5rem);
             line-height: 1;
@@ -76,19 +75,19 @@
         </button>
     </header>
 
-    <main class="my-auto flex flex-col items-center justify-center text-center py-6">
+    <main class="my-auto flex flex-col items-center justify-center text-center py-4">
         <p class="text-xs text-slate-400 mb-2 font-bold tracking-widest uppercase">سرعة التنزيل الحالية</p>
         
         <div class="flex items-baseline justify-center gap-2 my-2">
             <span id="speedVal" class="fast-speed-number orbitron">0.0</span>
             <div class="text-right">
                 <span class="block text-xl font-extrabold text-cyan-400 orbitron">Mbps</span>
-                <span id="statusBadge" class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">جاري القياس...</span>
+                <span id="statusBadge" class="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">جاري القياس...</span>
             </div>
         </div>
 
         <div class="w-full max-w-xs bg-slate-900/80 rounded-full h-1.5 mt-4 mb-8 overflow-hidden border border-slate-800">
-            <div id="progressBar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-0 transition-all duration-150"></div>
+            <div id="progressBar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-0 transition-all duration-200"></div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 w-full">
@@ -122,134 +121,67 @@
     </main>
 
     <footer class="py-3 text-center flex flex-col items-center justify-center gap-1.5 border-t border-slate-800/80">
-        <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1 shadow-[0_0_12px_rgba(0,229,255,0.2)]">
-            <svg viewBox="0 0 200 200" class="w-full h-full">
-                <circle cx="100" cy="100" r="95" fill="none" stroke="#e2e8f0" stroke-width="4"/>
-                <path d="M 60,110 C 50,60 120,40 140,70 C 160,100 120,130 90,140" fill="none" stroke="#0088cc" stroke-width="16" stroke-linecap="round"/>
-                <path d="M 85,75 L 145,135 M 145,135 L 120,135 M 145,135 L 145,110" fill="none" stroke="#ff8c00" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M 70,120 C 80,150 120,160 150,145" fill="none" stroke="#00a8ff" stroke-width="12" stroke-linecap="round"/>
+        <div class="w-12 h-12 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center p-1.5 shadow-[0_0_12px_rgba(0,229,255,0.25)]">
+            <svg viewBox="0 0 500 500" class="w-full h-full">
+                <defs>
+                    <linearGradient id="uxBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00b4d8" />
+                        <stop offset="100%" stop-color="#0077b6" />
+                    </linearGradient>
+                    <linearGradient id="uxOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffb703" />
+                        <stop offset="100%" stop-color="#fb8500" />
+                    </linearGradient>
+                </defs>
+                <circle cx="250" cy="250" r="230" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+                <path d="M 120,230 C 100,120 280,80 340,150 C 390,210 320,300 220,330 C 150,350 110,290 120,230 Z" fill="none" stroke="url(#uxBlue)" stroke-width="36" stroke-linecap="round"/>
+                <path d="M 180,180 L 320,320 M 320,320 L 260,320 M 320,320 L 320,260" fill="none" stroke="url(#uxOrange)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
         <p class="text-[11px] font-bold text-cyan-400">تم التطوير من فريق UROXA</p>
     </footer>
 
     <script>
-        let abortCtrl = null;
-        let isRunning = false;
+        let isTesting = false;
+        let activeXHRs = [];
 
-        // بدء الفحص تلقائياً بمجرد فتح الصفحة (مثل Fast.com)
         document.addEventListener('DOMContentLoaded', () => {
             fetchNetworkInfo();
-            startFastTest();
+            startFastEngine();
         });
 
         function restartTest() {
-            if (isRunning && abortCtrl) abortCtrl.abort();
+            stopAllConnections();
             const icon = document.getElementById('reloadIcon');
             icon.classList.add('fa-spin');
             setTimeout(() => icon.classList.remove('fa-spin'), 1000);
-            startFastTest();
+            startFastEngine();
         }
 
-        async function startFastTest() {
-            isRunning = true;
-            abortCtrl = new AbortController();
+        function stopAllConnections() {
+            isTesting = false;
+            activeXHRs.forEach(xhr => { try { xhr.abort(); } catch(e){} });
+            activeXHRs = [];
+        }
 
-            // إعادة تعيين الواجهة
+        async function startFastEngine() {
+            stopAllConnections();
+            isTesting = true;
+
+            // إعادة ضبط البيانات
             document.getElementById('speedVal').innerText = '0.0';
             document.getElementById('ulVal').innerText = '--';
             document.getElementById('pingVal').innerText = '--';
             document.getElementById('jitterVal').innerText = '--';
-            document.getElementById('progressBar').style.width = '5%';
+            document.getElementById('progressBar').style.width = '10%';
             document.getElementById('statusBadge').innerText = 'جاري القياس...';
             document.getElementById('statusBadge').className = 'text-[10px] text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30';
 
-            try {
-                // 1. فحص البينغ سريعاً
-                runPingFast();
+            // 1. البينغ
+            runFastPing();
 
-                // 2. فحص التنزيل التكيفي الموازي (نظام Fast)
-                document.getElementById('progressBar').style.width = '20%';
-                const finalDl = await runParallelDownloadFast();
-                document.getElementById('speedVal').innerText = finalDl.toFixed(1);
-                document.getElementById('progressBar').style.width = '70%';
+            // 2. التحميل التكيفي السريع (Fast System)
+            const finalSpeed = await runFastDownload();
+            if (!isTesting) return;
 
-                // 3. فحص الرفع
-                document.getElementById('statusBadge').innerText = 'فحص الرفع...';
-                const finalUl = await runUploadFast();
-                document.getElementById('ulVal').innerText = finalUl.toFixed(1);
-
-                // إتمام الفحص
-                document.getElementById('progressBar').style.width = '100%';
-                document.getElementById('statusBadge').innerText = 'مكتمل';
-                document.getElementById('statusBadge').className = 'text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30';
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    document.getElementById('statusBadge').innerText = 'تم الاكتفاء';
-                }
-            } finally {
-                isRunning = false;
-            }
-        }
-
-        // خوارزمية جلب البيانات المتوازية (Fast Algorithm)
-        async function runParallelDownloadFast() {
-            const testDuration = 6000; // 6 ثوانٍ للفحص
-            const startTime = performance.now();
-            let totalBytes = 0;
-            
-            // أحجام الحزم المتدرجة (تزداد تلقائياً لملء الأنبوب)
-            const chunkSizes = [1000000, 5000000, 15000000, 25000000]; 
-
-            const worker = async (threadId) => {
-                let sizeIndex = 0;
-                while (performance.now() - startTime < testDuration && isRunning) {
-                    const bytesToFetch = chunkSizes[Math.min(sizeIndex, chunkSizes.length - 1)];
-                    try {
-                        const res = await fetch(`https://speed.cloudflare.com/__down?bytes=${bytesToFetch}&r=${Math.random()}`, {
-                            cache: 'no-store',
-                            signal: abortCtrl.signal
-                        });
-                        
-                        const reader = res.body.getReader();
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            totalBytes += value.length;
-
-                            const elapsedSec = (performance.now() - startTime) / 1000;
-                            if (elapsedSec > 0.1) {
-                                const currentMbps = (totalBytes * 8) / (elapsedSec * 1000000);
-                                document.getElementById('speedVal').innerText = currentMbps.toFixed(1);
-                                
-                                // تحديث كسر التقدم
-                                const prog = Math.min(20 + (elapsedSec / (testDuration / 1000)) * 50, 70);
-                                document.getElementById('progressBar').style.width = `${prog}%`;
-                            }
-
-                            if (performance.now() - startTime >= testDuration || !isRunning) {
-                                reader.cancel();
-                                break;
-                            }
-                        }
-                    } catch(e) { break; }
-                    sizeIndex++;
-                }
-            };
-
-            // تشغيل 4 اتصالات متوازية كحد أقصى للحصول على أقصى سرعة
-            await Promise.all([worker(1), worker(2), worker(3), worker(4)]);
-
-            const totalTime = (performance.now() - startTime) / 1000;
-            return totalTime > 0 ? (totalBytes * 8) / (totalTime * 1000000) : 0;
-        }
-
-        async function runUploadFast() {
-            const duration = 3500;
-            const startTime = performance.now();
-            let totalBytes = 0;
-            const chunk = new Uint8Array(256 * 1024); // 256KB
-
-            while (performance.now() - startTime < duration && isRunning) {
-                try {
-                    await fetch(`https://speed.cloudflare.
+            document.getElementById('speedVal').innerText = finalSpeed.toFixed(1);
