@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الطقس ومواقيت الصلاة</title>
+    <title>بوابة الطقس ومواقيت الصلاة | UROXA</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* خلفية ديناميكية متحركة رهيبة */
+        /* إعدادات عامة */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(-45deg, #1e3c72, #2a5298, #ff7e5f, #feb47b);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
             color: #fff;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* لضمان بقاء الفوتر في الأسفل */
+            justify-content: space-between;
             align-items: center;
+            transition: background 1.5s ease-in-out; /* انتقال ناعم عند تغير الخلفية */
             overflow-x: hidden;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        /* الكلاسات الديناميكية للخلفيات حسب حالة الطقس والوقت */
+        .day-hot { background: linear-gradient(to bottom, #ff7e5f, #feb47b); } /* نهار صيفي/حار */
+        .day-cool { background: linear-gradient(to bottom, #4facfe, #00f2fe); } /* نهار شتوي/معتدل */
+        .night-warm { background: linear-gradient(to bottom, #2b5876, #4e4376); } /* ليل دافئ */
+        .night-cold { background: linear-gradient(to bottom, #141e30, #243b55); } /* ليل بارد */
+        .default-bg { background: linear-gradient(to bottom, #3a7bd5, #3a6073); } /* خلفية افتراضية قبل التحميل */
 
-        /* الحاوية الرئيسية والتوزيع الشبكي */
+        /* الحاوية الرئيسية */
         .dashboard {
             width: 95%;
             max-width: 1000px;
@@ -36,11 +36,12 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            flex-grow: 1;
         }
 
-        /* تصميم البطاقات الزجاجية الحديثة */
+        /* البطاقات الزجاجية */
         .card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -49,59 +50,46 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease;
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .header-card {
-            grid-column: 1 / -1;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
+        .card:hover { transform: translateY(-5px); }
+        .header-card { grid-column: 1 / -1; text-align: center; background: rgba(0, 0, 0, 0.25); }
+        
         h1 { margin: 0 0 10px 0; font-size: 2.2rem; font-weight: 900; }
         h2 { margin: 0 0 20px 0; font-size: 1.5rem; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
-        
         .time-text { font-size: 1.2rem; color: #f1f1f1; opacity: 0.9; }
-
+        
         /* تفاصيل الطقس */
-        .weather-main { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; margin-bottom: 15px;}
+        .weather-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;}
         .temp-huge { font-size: 3.5rem; font-weight: 900; color: #ffeb3b; }
 
         /* مواقيت الصلاة */
-        .prayer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 15px;
-        }
-        .prayer-item {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px 10px;
-            border-radius: 15px;
-            text-align: center;
-        }
+        .prayer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; }
+        .prayer-item { background: rgba(0, 0, 0, 0.3); padding: 15px 10px; border-radius: 15px; text-align: center; }
         .p-name { display: block; font-size: 1rem; color: #ccc; margin-bottom: 5px; }
         .p-time { display: block; font-size: 1.3rem; font-weight: 700; color: #fff; }
 
         /* توقعات 7 أيام */
         .forecast-list { display: flex; flex-direction: column; gap: 12px; }
-        .forecast-item {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.05);
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-        }
+        .forecast-item { display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 12px; font-size: 1.1rem; }
 
-        /* للشاشات الصغيرة */
-        @media (max-width: 768px) {
-            .dashboard { grid-template-columns: 1fr; }
+        /* حقوق الفريق (الفوتر) */
+        .team-footer {
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 1px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
         }
+        .team-footer span { color: #ffeb3b; }
+
+        @media (max-width: 768px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body>
+<body class="default-bg" id="app-body">
 
     <div class="dashboard">
         <div class="card header-card">
@@ -124,50 +112,75 @@
 
         <div class="card">
             <h2>توقعات الأيام القادمة</h2>
-            <div class="forecast-list" id="forecast-container">
-                جاري جلب التوقعات...
-            </div>
+            <div class="forecast-list" id="forecast-container">جاري جلب التوقعات...</div>
         </div>
 
         <div class="card" style="grid-column: 1 / -1;">
             <h2>مواقيت الصلاة لمنطقتك</h2>
-            <div class="prayer-grid" id="prayer-container">
-                جاري حساب الأوقات...
-            </div>
+            <div class="prayer-grid" id="prayer-container">جاري حساب الأوقات...</div>
         </div>
     </div>
 
+    <div class="team-footer">
+        تم التطوير من قبل فريق <span>UROXA</span>
+    </div>
+
     <script>
-        // تحديث الوقت والتاريخ
+        // 1. تحديث الوقت والتاريخ
         setInterval(() => {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
             document.getElementById('current-datetime').innerText = new Date().toLocaleDateString('ar-IQ', options);
         }, 1000);
 
-        // جلب البيانات الشاملة
+        // 2. دالة التحكم في الخلفية الديناميكية
+        function setDynamicBackground(temp, isDay) {
+            const body = document.getElementById('app-body');
+            body.className = ''; // إزالة الخلفية الافتراضية
+            
+            if (isDay) { // إذا كان الوقت نهاراً
+                if (temp >= 30) {
+                    body.classList.add('day-hot'); // نهار حار
+                } else {
+                    body.classList.add('day-cool'); // نهار معتدل/بارد
+                }
+            } else { // إذا كان الوقت ليلاً
+                if (temp >= 25) {
+                    body.classList.add('night-warm'); // ليل دافئ
+                } else {
+                    body.classList.add('night-cold'); // ليل بارد
+                }
+            }
+        }
+
+        // 3. جلب البيانات الشاملة
         async function fetchAllData(lat, lon) {
             try {
-                // جلب بيانات الطقس
+                // جلب الطقس واستخراج معامل (is_day) لمعرفة ليل أم نهار
                 const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
                 const weatherData = await weatherRes.json();
                 
+                const currentTemp = weatherData.current_weather.temperature;
+                const isDayTime = weatherData.current_weather.is_day === 1; // ترجع 1 للنهار و 0 لليل
+
+                // تحديث الخلفية فوراً
+                setDynamicBackground(currentTemp, isDayTime);
+
                 document.getElementById('location-name').innerText = "بيانات منطقتك الحالية 📍";
-                document.getElementById('current-temp').innerText = weatherData.current_weather.temperature + "°";
+                document.getElementById('current-temp').innerText = currentTemp + "°";
                 document.getElementById('current-wind').innerText = weatherData.current_weather.windspeed + " كم/س";
 
-                // بناء توقعات 7 أيام
+                // بناء التوقعات
                 let forecastHTML = '';
                 const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
                 for(let i = 1; i <= 7; i++) {
                     const date = new Date(weatherData.daily.time[i]);
-                    const dayName = days[date.getDay()];
                     const maxT = Math.round(weatherData.daily.temperature_2m_max[i]);
                     const minT = Math.round(weatherData.daily.temperature_2m_min[i]);
-                    forecastHTML += `<div class="forecast-item"><span>${dayName}</span> <span><span style="color:#ffeb3b">${maxT}°</span> / <span style="color:#aaa">${minT}°</span></span></div>`;
+                    forecastHTML += `<div class="forecast-item"><span>${days[date.getDay()]}</span> <span><span style="color:#ffeb3b">${maxT}°</span> / <span style="color:#aaa">${minT}°</span></span></div>`;
                 }
                 document.getElementById('forecast-container').innerHTML = forecastHTML;
 
-                // جلب مواقيت الصلاة
+                // جلب الصلاة
                 const prayerRes = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`);
                 const prayerData = await prayerRes.json();
                 const timings = prayerData.data.timings;
@@ -184,11 +197,11 @@
             }
         }
 
-        // تحديد الموقع الجغرافي
+        // 4. تحديد الموقع
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => fetchAllData(pos.coords.latitude, pos.coords.longitude),
-                (err) => fetchAllData(31.9922, 44.9258) // إحداثيات افتراضية
+                (err) => fetchAllData(31.9922, 44.9258)
             );
         } else {
             fetchAllData(31.9922, 44.9258);
