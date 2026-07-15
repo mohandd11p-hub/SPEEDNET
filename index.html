@@ -3,160 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الطقس ومواقيت الصلاة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>بوابة الطقس ومواقيت الصلاة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* إعدادات الخلفية والخط */
+        /* خلفية ديناميكية متحركة رهيبة */
         body {
             margin: 0;
             padding: 0;
-            background-color: #050505;
-            color: #ffffff;
-            font-family: 'Tajawal', sans-serif;
-            overflow-x: hidden;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(-45deg, #1e3c72, #2a5298, #ff7e5f, #feb47b);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow-x: hidden;
         }
 
-        /* تصميم القمر والشهب */
-        .moon {
-            position: absolute;
-            top: 50px;
-            right: 80px;
-            width: 80px;
-            height: 80px;
-            background: #f1f1f1;
-            border-radius: 50%;
-            box-shadow: 0 0 40px rgba(241, 241, 241, 0.6), inset 15px -15px 0 rgba(200, 200, 200, 0.5);
-            z-index: 1;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        #meteors-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .meteor {
-            position: absolute;
-            background: linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
-            width: 100px;
-            height: 2px;
-            transform: rotate(-45deg);
-            opacity: 0;
-            animation: shoot linear infinite;
-        }
-
-        @keyframes shoot {
-            0% { transform: translate(-100px, -100px) rotate(-45deg); opacity: 1; }
-            100% { transform: translate(calc(100vw + 100px), calc(100vh + 100px)) rotate(-45deg); opacity: 0; }
-        }
-
-        /* تصميم الحاوية الزجاجية الاحترافية */
-        .glass-panel {
-            position: relative;
-            z-index: 10;
-            background: rgba(20, 20, 30, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 800px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        /* الحاوية الرئيسية والتوزيع الشبكي */
+        .dashboard {
+            width: 95%;
+            max-width: 1000px;
+            margin: 40px auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin: 40px 0;
+            gap: 20px;
         }
 
-        /* تنسيق النصوص والعناوين */
-        h2, h3 { margin-top: 0; font-weight: 700; color: #e0e0e0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 1.1rem; }
-        .highlight { font-weight: 700; color: #4facfe; }
+        /* تصميم البطاقات الزجاجية الحديثة */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .header-card {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 2.2rem; font-weight: 900; }
+        h2 { margin: 0 0 20px 0; font-size: 1.5rem; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+        
+        .time-text { font-size: 1.2rem; color: #f1f1f1; opacity: 0.9; }
+
+        /* تفاصيل الطقس */
+        .weather-main { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; margin-bottom: 15px;}
+        .temp-huge { font-size: 3.5rem; font-weight: 900; color: #ffeb3b; }
+
+        /* مواقيت الصلاة */
+        .prayer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        .prayer-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 10px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .p-name { display: block; font-size: 1rem; color: #ccc; margin-bottom: 5px; }
+        .p-time { display: block; font-size: 1.3rem; font-weight: 700; color: #fff; }
 
         /* توقعات 7 أيام */
-        .forecast-container { display: flex; flex-direction: column; gap: 10px; }
-        .forecast-day { display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 10px; }
-        
-        /* مواقيت الصلاة */
-        .prayer-times { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .prayer-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; }
-        .prayer-name { font-size: 0.9rem; color: #aaa; margin-bottom: 5px; }
-        .prayer-time { font-size: 1.2rem; font-weight: 700; }
+        .forecast-list { display: flex; flex-direction: column; gap: 12px; }
+        .forecast-item {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.05);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
 
-        /* استجابة الشاشات الصغيرة (الجوال) */
+        /* للشاشات الصغيرة */
         @media (max-width: 768px) {
-            .glass-panel { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="moon"></div>
-    <div id="meteors-container"></div>
-
-    <div class="glass-panel" id="main-content">
-        <div style="text-align: center; grid-column: 1 / -1;">
-            <h2 id="location-name">جاري تحديد الموقع... 🌍</h2>
-            <p id="current-datetime" style="color: #aaa;"></p>
+    <div class="dashboard">
+        <div class="card header-card">
+            <h1 id="location-name">جاري تحديد موقعك الجغرافي... 🌍</h1>
+            <div class="time-text" id="current-datetime">جاري ضبط الوقت...</div>
         </div>
 
-        <div>
-            <h3>الطقس الحالي</h3>
-            <div class="info-row"><span>درجة الحرارة:</span> <span class="highlight" id="current-temp">-</span></div>
-            <div class="info-row"><span>سرعة الرياح:</span> <span class="highlight" id="current-wind">-</span></div>
-            <br>
-            <h3>مواقيت الصلاة</h3>
-            <div class="prayer-times" id="prayer-container">
-                جاري التحميل...
+        <div class="card">
+            <h2>حالة الطقس الآن</h2>
+            <div class="weather-main">
+                <div>
+                    <div style="font-size: 1.2rem; opacity: 0.8;">درجة الحرارة</div>
+                    <div class="temp-huge" id="current-temp">-</div>
+                </div>
+                <div style="text-align: left;">
+                    <div>💨 الرياح: <span id="current-wind">-</span></div>
+                </div>
             </div>
         </div>
 
-        <div>
-            <h3>توقعات الأيام القادمة</h3>
-            <div class="forecast-container" id="forecast-container">
-                جاري التحميل...
+        <div class="card">
+            <h2>توقعات الأيام القادمة</h2>
+            <div class="forecast-list" id="forecast-container">
+                جاري جلب التوقعات...
+            </div>
+        </div>
+
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>مواقيت الصلاة لمنطقتك</h2>
+            <div class="prayer-grid" id="prayer-container">
+                جاري حساب الأوقات...
             </div>
         </div>
     </div>
 
     <script>
-        // 1. نظام الشهب
-        function createMeteor() {
-            const container = document.getElementById('meteors-container');
-            const meteor = document.createElement('div');
-            meteor.classList.add('meteor');
-            meteor.style.left = Math.random() * window.innerWidth + 'px';
-            meteor.style.top = (Math.random() * window.innerHeight * 0.5 - 100) + 'px';
-            meteor.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
-            container.appendChild(meteor);
-            setTimeout(() => meteor.remove(), 3500);
-        }
-        setInterval(createMeteor, 1200);
-
-        // 2. تحديث الوقت
+        // تحديث الوقت والتاريخ
         setInterval(() => {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
             document.getElementById('current-datetime').innerText = new Date().toLocaleDateString('ar-IQ', options);
         }, 1000);
 
-        // 3. جلب البيانات (الطقس + الصلاة)
+        // جلب البيانات الشاملة
         async function fetchAllData(lat, lon) {
             try {
-                // جلب الطقس لتسعة أيام (لضمان وجود 7 أيام قادمة)
+                // جلب بيانات الطقس
                 const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
                 const weatherData = await weatherRes.json();
                 
                 document.getElementById('location-name').innerText = "بيانات منطقتك الحالية 📍";
-                document.getElementById('current-temp').innerText = weatherData.current_weather.temperature + " °C";
+                document.getElementById('current-temp').innerText = weatherData.current_weather.temperature + "°";
                 document.getElementById('current-wind').innerText = weatherData.current_weather.windspeed + " كم/س";
 
                 // بناء توقعات 7 أيام
@@ -165,9 +161,9 @@
                 for(let i = 1; i <= 7; i++) {
                     const date = new Date(weatherData.daily.time[i]);
                     const dayName = days[date.getDay()];
-                    const maxT = weatherData.daily.temperature_2m_max[i];
-                    const minT = weatherData.daily.temperature_2m_min[i];
-                    forecastHTML += `<div class="forecast-day"><span>${dayName}</span> <span>${maxT}° / <span style="color:#aaa">${minT}°</span></span></div>`;
+                    const maxT = Math.round(weatherData.daily.temperature_2m_max[i]);
+                    const minT = Math.round(weatherData.daily.temperature_2m_min[i]);
+                    forecastHTML += `<div class="forecast-item"><span>${dayName}</span> <span><span style="color:#ffeb3b">${maxT}°</span> / <span style="color:#aaa">${minT}°</span></span></div>`;
                 }
                 document.getElementById('forecast-container').innerHTML = forecastHTML;
 
@@ -179,20 +175,20 @@
                 const prayersToDisplay = { 'Fajr': 'الفجر', 'Sunrise': 'الشروق', 'Dhuhr': 'الظهر', 'Asr': 'العصر', 'Maghrib': 'المغرب', 'Isha': 'العشاء' };
                 let prayerHTML = '';
                 for (const [key, arName] of Object.entries(prayersToDisplay)) {
-                    prayerHTML += `<div class="prayer-card"><div class="prayer-name">${arName}</div><div class="prayer-time">${timings[key]}</div></div>`;
+                    prayerHTML += `<div class="prayer-item"><span class="p-name">${arName}</span><span class="p-time">${timings[key]}</span></div>`;
                 }
                 document.getElementById('prayer-container').innerHTML = prayerHTML;
 
             } catch (error) {
-                document.getElementById('location-name').innerText = "حدث خطأ في جلب البيانات.";
+                document.getElementById('location-name').innerText = "تعذر جلب البيانات. يرجى التحقق من اتصالك.";
             }
         }
 
-        // 4. تحديد الموقع
+        // تحديد الموقع الجغرافي
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => fetchAllData(pos.coords.latitude, pos.coords.longitude),
-                (err) => fetchAllData(31.9922, 44.9258) // الديوانية كافتراضي
+                (err) => fetchAllData(31.9922, 44.9258) // إحداثيات افتراضية
             );
         } else {
             fetchAllData(31.9922, 44.9258);
