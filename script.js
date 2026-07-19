@@ -17,8 +17,13 @@ async function startBot() {
             // تحديث الواجهة
             document.getElementById('current-price').innerText = price;
             
-            // هنا يمكنك إضافة منطق التداول (IF/ELSE) مستقبلاً
-            // log("السعر الحالي: " + price); 
+            // أضف هذا داخل دالة الـ fetch بعد الحصول على السعر
+if (price < 64000) {
+    log("تحذير: السعر انخفض! فرصة محتملة للشراء.");
+    // هنا سنضيف لاحقاً كود تنفيذ أمر الشراء الفعلي
+} else {
+    log("السعر مستقر، بانتظار إشارة...");
+}
 
         } catch (error) {
             log("خطأ في الاتصال: " + error.message);
