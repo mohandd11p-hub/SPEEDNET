@@ -1,4 +1,6 @@
 let botInterval = null;
+let priceHistory = []; 
+let alertSent = false;
 
 async function startBot() {
     if (botInterval) return; // منع تشغيل أكثر من حلقة
@@ -16,14 +18,19 @@ async function startBot() {
 
             // تحديث الواجهة
             document.getElementById('current-price').innerText = price;
-            
-            // أضف هذا داخل دالة الـ fetch بعد الحصول على السعر
-if (price < 64300) {
-    log("تحذير: السعر انخفض! فرصة محتملة للشراء.");
-    // هنا سنضيف لاحقاً كود تنفيذ أمر الشراء الفعلي
-} else {
-    log("السعر مستقر، بانتظار إشارة...");
+         priceHistory.push(parseFloat(price));
+if (priceHistory.length > 5) priceHistory.shift(); 
+
+const sum = priceHistory.reduce((a, b) => a + b, 0);
+const average = sum / priceHistory.length;
+
+if (price < average && !alertSent) {
+    log("تحليل فني: السعر " + price + " أقل من المتوسط " + average.toFixed(2));
+    alertSent = true;
+} else if (price >= average) {
+    alertSent = false;
 }
+
 
         } catch (error) {
             log("خطأ في الاتصال: " + error.message);
