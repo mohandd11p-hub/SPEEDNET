@@ -12,7 +12,7 @@ async function startBot() {
     botInterval = setInterval(async () => {
         try {
             // جلب سعر البيتكوين مقابل الدولار (مثال)
-            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XAUUSDT');
             const data = await response.json();
             const price = parseFloat(data.price).toFixed(2);
 
