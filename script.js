@@ -6,7 +6,8 @@ async function startBot() {
     if (botInterval) return; // منع تشغيل أكثر من حلقة
 
     document.getElementById('bot-status').innerText = "يعمل...";
-    log("بدء الاتصال بـ Binance API...");
+    log("بدء الاتصال بخادم أسعار الذهب...");
+
 
     // حلقة تكرار تجلب السعر كل 5 ثوانٍ
     botInterval = setInterval(async () => {
