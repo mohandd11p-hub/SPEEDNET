@@ -18,7 +18,7 @@ async function startBot() {
             document.getElementById('current-price').innerText = price;
             
             // أضف هذا داخل دالة الـ fetch بعد الحصول على السعر
-if (price < 64400) {
+if (price < 64500) {
     log("تحذير: السعر انخفض! فرصة محتملة للشراء.");
     // هنا سنضيف لاحقاً كود تنفيذ أمر الشراء الفعلي
 } else {
