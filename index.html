@@ -3,104 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المشتركين - صيانة</title>
+    <title>خريطة الصيانة الميدانية</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    
     <style>
-        body { font-family: sans-serif; margin: 0; }
-        .tabs { display: flex; background: #333; color: white; }
-        .tab { padding: 15px; cursor: pointer; flex: 1; text-align: center; }
-        .tab.active { background: #007bff; }
-        #map { height: 80vh; width: 100%; display: none; }
-        #admin { padding: 20px; display: none; }
-        #map.active, #admin.active { display: block; }
-        input, button { width: 100%; padding: 10px; margin: 5px 0; }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: right; }
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        /* شريط علوي للتحكم */
+        .controls { position: absolute; top: 10px; z-index: 1000; width: 95%; left: 2.5%; }
+        .btn-panel { display: flex; gap: 5px; margin-bottom: 5px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; flex: 1; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        
+        #map { height: 100vh; width: 100%; }
+        #adminPanel { position: absolute; bottom: 0; width: 100%; background: white; height: 50%; overflow-y: scroll; display: none; padding: 15px; box-sizing: border-box; z-index: 2000; }
     </style>
 </head>
 <body>
 
-<div class="tabs">
-    <div class="tab active" onclick="showTab('map')">الخريطة</div>
-    <div class="tab" onclick="showTab('admin')">لوحة التحكم</div>
+<div class="controls">
+    <input type="text" id="searchInput" placeholder="ابحث عن اسم المشترك..." onkeyup="searchSubscriber()">
+    <div class="btn-panel">
+        <button onclick="toggleView('map')">خريطة</button>
+        <button onclick="toggleView('admin')">إدارة البيانات</button>
+        <button onclick="toggleLayer()">تغيير العرض (قمر صناعي)</button>
+    </div>
 </div>
 
-<!-- تبويب الخريطة -->
-<div id="map" class="active"></div>
+<div id="map"></div>
 
-<!-- تبويب التحكم -->
-<div id="admin">
-    <h3>إضافة مشترك جديد</h3>
-    <input type="text" id="name" placeholder="اسم المشترك">
-    <input type="text" id="phone" placeholder="رقم الهاتف">
-    <input type="text" id="pole" placeholder="العمود/النقطة">
-    <input type="text" id="lat" placeholder="خط العرض (سيُملأ تلقائياً عند الضغط على الخريطة)">
-    <input type="text" id="lng" placeholder="خط الطول (سيُملأ تلقائياً عند الضغط على الخريطة)">
-    <button onclick="saveUser()">حفظ المشترك</button>
+<div id="adminPanel">
+    <h3>إضافة / حذف مشترك</h3>
+    <input type="text" id="name" placeholder="الاسم">
+    <input type="text" id="pole" placeholder="رقم العمود">
+    <input type="text" id="lat" placeholder="خط العرض (اضغط الخريطة)">
+    <input type="text" id="lng" placeholder="خط الطول (اضغط الخريطة)">
+    <button onclick="saveUser()">حفظ</button>
     <hr>
-    <table>
-        <thead><tr><th>الاسم</th><th>العمليات</th></tr></thead>
-        <tbody id="userTable"></tbody>
-    </table>
+    <div id="userList"></div>
 </div>
 
 <script>
-    var map = L.map('map').setView([31.986, 44.920], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // 1. الخرائط
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    
+    var map = L.map('map', { layers: [osm] }).setView([31.986, 44.920], 16);
+    
+    let currentLayer = osm;
+    function toggleLayer() {
+        map.removeLayer(currentLayer);
+        currentLayer = (currentLayer === osm) ? sat : osm;
+        currentLayer.addTo(map);
+    }
 
+    // 2. البيانات
     let users = JSON.parse(localStorage.getItem('myUsers')) || [];
+    let routingControl = null;
+    let myLoc = null;
 
-    // إضافة ماركر عند الضغط على الخريطة لأخذ الإحداثيات
-    map.on('click', function(e) {
+    // 3. الخريطة وتحديد المواقع
+    map.locate({enableHighAccuracy: true});
+    map.on('locationfound', e => { myLoc = e.latlng; });
+    map.on('click', e => { 
         document.getElementById('lat').value = e.latlng.lat;
         document.getElementById('lng').value = e.latlng.lng;
-        alert("تم تحديد الموقع! انتقل للوحة التحكم لحفظ الاسم.");
-        showTab('admin');
     });
 
-    function saveUser() {
-        const user = {
-            id: Date.now(),
-            name: document.getElementById('name').value,
-            phone: document.getElementById('phone').value,
-            pole: document.getElementById('pole').value,
-            lat: document.getElementById('lat').value,
-            lng: document.getElementById('lng').value
-        };
-        users.push(user);
-        localStorage.setItem('myUsers', JSON.stringify(users));
-        location.reload();
-    }
-
-    function deleteUser(id) {
-        users = users.filter(u => u.id !== id);
-        localStorage.setItem('myUsers', JSON.stringify(users));
-        location.reload();
-    }
-
-    function showTab(tabName) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('map').classList.remove('active');
-        document.getElementById('admin').classList.remove('active');
-        
-        document.getElementById(tabName).classList.add('active');
-        event.target.classList.add('active');
-        
-        if(tabName === 'map') renderMarkers();
-    }
-
-    function renderMarkers() {
+    function render() {
         users.forEach(u => {
-            L.marker([u.lat, u.lng]).addTo(map).bindPopup(`<b>${u.name}</b><br>${u.pole}`);
+            L.marker([u.lat, u.lng]).addTo(map).bindPopup(u.name);
+        });
+    }
+    render();
+
+    // 4. البحث والمسار
+    function searchSubscriber() {
+        const val = document.getElementById('searchInput').value.toLowerCase();
+        users.forEach(u => {
+            if(u.name.toLowerCase().includes(val) && val !== "") {
+                if(routingControl) map.removeControl(routingControl);
+                routingControl = L.Routing.control({
+                    waypoints: [myLoc, L.latLng(u.lat, u.lng)],
+                    routeWhileDragging: false,
+                    language: 'ar'
+                }).addTo(map);
+                map.setView([u.lat, u.lng], 18);
+            }
         });
     }
 
-    // عرض قائمة المستخدمين في لوحة التحكم
-    const table = document.getElementById('userTable');
-    users.forEach(u => {
-        table.innerHTML += `<tr><td>${u.name}</td><td><button onclick="deleteUser(${u.id})">حذف</button></td></tr>`;
-    });
+    // 5. التبديليات
+    function toggleView(v) {
+        document.getElementById('adminPanel').style.display = (v === 'admin') ? 'block' : 'none';
+        setTimeout(() => map.invalidateSize(), 100);
+    }
+
+    function saveUser() {
+        users.push({ id: Date.now(), name: document.getElementById('name').value, lat: document.getElementById('lat').value, lng: document.getElementById('lng').value });
+        localStorage.setItem('myUsers', JSON.stringify(users));
+        location.reload();
+    }
 </script>
 </body>
 </html>
