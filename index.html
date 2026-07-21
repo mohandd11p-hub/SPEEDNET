@@ -3,86 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خريطة صيانة الإنترنت</title>
-    <!-- مكتبات Leaflet -->
+    <title>إدارة المشتركين - صيانة</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-    
     <style>
-        body { margin: 0; padding: 0; }
-        #map { height: 100vh; width: 100%; }
-        .search-container { position: absolute; top: 15px; right: 15px; left: 15px; z-index: 1000; }
-        #searchInput { width: 100%; padding: 15px; border-radius: 10px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); font-size: 16px; }
-        .btn-call { display: block; background: #28a745; color: white; padding: 8px; text-align: center; text-decoration: none; border-radius: 5px; margin-top: 8px; font-weight: bold; }
+        body { font-family: sans-serif; margin: 0; }
+        .tabs { display: flex; background: #333; color: white; }
+        .tab { padding: 15px; cursor: pointer; flex: 1; text-align: center; }
+        .tab.active { background: #007bff; }
+        #map { height: 80vh; width: 100%; display: none; }
+        #admin { padding: 20px; display: none; }
+        #map.active, #admin.active { display: block; }
+        input, button { width: 100%; padding: 10px; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: right; }
     </style>
 </head>
 <body>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="ابحث عن اسم المشترك..." onkeyup="searchSubscriber()">
-    </div>
+<div class="tabs">
+    <div class="tab active" onclick="showTab('map')">الخريطة</div>
+    <div class="tab" onclick="showTab('admin')">لوحة التحكم</div>
+</div>
 
-    <div id="map"></div>
+<!-- تبويب الخريطة -->
+<div id="map" class="active"></div>
 
-    <script>
-        // 1. إعداد الخريطة على الديوانية
-        var map = L.map('map').setView([31.986, 44.920], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+<!-- تبويب التحكم -->
+<div id="admin">
+    <h3>إضافة مشترك جديد</h3>
+    <input type="text" id="name" placeholder="اسم المشترك">
+    <input type="text" id="phone" placeholder="رقم الهاتف">
+    <input type="text" id="pole" placeholder="العمود/النقطة">
+    <input type="text" id="lat" placeholder="خط العرض (سيُملأ تلقائياً عند الضغط على الخريطة)">
+    <input type="text" id="lng" placeholder="خط الطول (سيُملأ تلقائياً عند الضغط على الخريطة)">
+    <button onclick="saveUser()">حفظ المشترك</button>
+    <hr>
+    <table>
+        <thead><tr><th>الاسم</th><th>العمليات</th></tr></thead>
+        <tbody id="userTable"></tbody>
+    </table>
+</div>
 
-        // 2. بيانات المشتركين (أضف بياناتك هنا بدقة)
-        const subscribers = [
-            { name: "أحمد علي", phone: "07800000000", lat: 31.985, lng: 44.921, pole: "عمود 15" },
-            { name: "حسين محمد", phone: "07700000000", lat: 31.982, lng: 44.925, pole: "عمود 20" },
-            { name: "سارة خالد", phone: "07900000000", lat: 31.990, lng: 44.915, pole: "عمود 05" }
-        ];
+<script>
+    var map = L.map('map').setView([31.986, 44.920], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        let myMarker = null;
-        let routingControl = null;
-        let myLocation = null;
+    let users = JSON.parse(localStorage.getItem('myUsers')) || [];
 
-        // 3. إضافة الماركرز لكل المشتركين
-        subscribers.forEach(user => {
-            L.marker([user.lat, user.lng]).addTo(map)
-                .bindPopup(`
-                    <div style="text-align:right">
-                        <b>${user.name}</b><br>
-                        📍 العمود: ${user.pole}<br>
-                        📞 ${user.phone}<br>
-                        <a href="tel:${user.phone}" class="btn-call">اتصل بالعميل</a>
-                    </div>
-                `);
+    // إضافة ماركر عند الضغط على الخريطة لأخذ الإحداثيات
+    map.on('click', function(e) {
+        document.getElementById('lat').value = e.latlng.lat;
+        document.getElementById('lng').value = e.latlng.lng;
+        alert("تم تحديد الموقع! انتقل للوحة التحكم لحفظ الاسم.");
+        showTab('admin');
+    });
+
+    function saveUser() {
+        const user = {
+            id: Date.now(),
+            name: document.getElementById('name').value,
+            phone: document.getElementById('phone').value,
+            pole: document.getElementById('pole').value,
+            lat: document.getElementById('lat').value,
+            lng: document.getElementById('lng').value
+        };
+        users.push(user);
+        localStorage.setItem('myUsers', JSON.stringify(users));
+        location.reload();
+    }
+
+    function deleteUser(id) {
+        users = users.filter(u => u.id !== id);
+        localStorage.setItem('myUsers', JSON.stringify(users));
+        location.reload();
+    }
+
+    function showTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('map').classList.remove('active');
+        document.getElementById('admin').classList.remove('active');
+        
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+        
+        if(tabName === 'map') renderMarkers();
+    }
+
+    function renderMarkers() {
+        users.forEach(u => {
+            L.marker([u.lat, u.lng]).addTo(map).bindPopup(`<b>${u.name}</b><br>${u.pole}`);
         });
+    }
 
-        // 4. تتبع موقعك الحالي
-        map.locate({enableHighAccuracy: true});
-        map.on('locationfound', e => {
-            myLocation = e.latlng;
-            if (myMarker) map.removeLayer(myMarker);
-            myMarker = L.marker(myLocation, {color: 'blue'}).addTo(map).bindPopup("أنت هنا");
-        });
-
-        // 5. وظيفة البحث ورسم المسار
-        function searchSubscriber() {
-            const input = document.getElementById('searchInput').value.toLowerCase();
-            subscribers.forEach(user => {
-                if (input !== "" && user.name.toLowerCase().includes(input)) {
-                    if (!myLocation) { alert("يرجى تفعيل الـ GPS في هاتفك"); return; }
-                    
-                    map.setView([user.lat, user.lng], 16);
-                    
-                    if (routingControl) map.removeControl(routingControl);
-                    routingControl = L.Routing.control({
-                        waypoints: [myLocation, L.latLng(user.lat, user.lng)],
-                        routeWhileDragging: false,
-                        addWaypoints: false,
-                        draggableWaypoints: false,
-                        language: 'ar'
-                    }).addTo(map);
-                }
-            });
-        }
-    </script>
+    // عرض قائمة المستخدمين في لوحة التحكم
+    const table = document.getElementById('userTable');
+    users.forEach(u => {
+        table.innerHTML += `<tr><td>${u.name}</td><td><button onclick="deleteUser(${u.id})">حذف</button></td></tr>`;
+    });
+</script>
 </body>
 </html>
