@@ -2,8 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>خريطة المشتركين مع المسار</title>
-    <!-- ملفات Leaflet -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة صيانة الإنترنت</title>
+    <!-- مكتبات Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,56 +13,75 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { height: 100vh; width: 100%; }
-        .search-container { position: absolute; top: 10px; right: 10px; z-index: 1000; width: 80%; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .search-container { position: absolute; top: 15px; right: 15px; left: 15px; z-index: 1000; }
+        #searchInput { width: 100%; padding: 15px; border-radius: 10px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); font-size: 16px; }
+        .btn-call { display: block; background: #28a745; color: white; padding: 8px; text-align: center; text-decoration: none; border-radius: 5px; margin-top: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="بحث عن اسم المشترك..." onkeyup="searchSubscriber()">
+        <input type="text" id="searchInput" placeholder="ابحث عن اسم المشترك..." onkeyup="searchSubscriber()">
     </div>
 
     <div id="map"></div>
 
     <script>
+        // 1. إعداد الخريطة على الديوانية
         var map = L.map('map').setView([31.986, 44.920], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        var routingControl = null;
-
+        // 2. بيانات المشتركين (أضف بياناتك هنا بدقة)
         const subscribers = [
-            { name: "أحمد علي", lat: 31.985, lng: 44.921, pole: "عمود 15" },
-            { name: "حسين محمد", lat: 31.982, lng: 44.925, pole: "عمود 20" }
+            { name: "أحمد علي", phone: "07800000000", lat: 31.985, lng: 44.921, pole: "عمود 15" },
+            { name: "حسين محمد", phone: "07700000000", lat: 31.982, lng: 44.925, pole: "عمود 20" },
+            { name: "سارة خالد", phone: "07900000000", lat: 31.990, lng: 44.915, pole: "عمود 05" }
         ];
 
-        // تفعيل تتبع موقعك الحالي
-        map.locate({setView: false});
+        let myMarker = null;
+        let routingControl = null;
         let myLocation = null;
-        map.on('locationfound', e => { myLocation = e.latlng; });
 
+        // 3. إضافة الماركرز لكل المشتركين
+        subscribers.forEach(user => {
+            L.marker([user.lat, user.lng]).addTo(map)
+                .bindPopup(`
+                    <div style="text-align:right">
+                        <b>${user.name}</b><br>
+                        📍 العمود: ${user.pole}<br>
+                        📞 ${user.phone}<br>
+                        <a href="tel:${user.phone}" class="btn-call">اتصل بالعميل</a>
+                    </div>
+                `);
+        });
+
+        // 4. تتبع موقعك الحالي
+        map.locate({enableHighAccuracy: true});
+        map.on('locationfound', e => {
+            myLocation = e.latlng;
+            if (myMarker) map.removeLayer(myMarker);
+            myMarker = L.marker(myLocation, {color: 'blue'}).addTo(map).bindPopup("أنت هنا");
+        });
+
+        // 5. وظيفة البحث ورسم المسار
         function searchSubscriber() {
             const input = document.getElementById('searchInput').value.toLowerCase();
             subscribers.forEach(user => {
                 if (input !== "" && user.name.toLowerCase().includes(input)) {
-                    showRoute(user);
+                    if (!myLocation) { alert("يرجى تفعيل الـ GPS في هاتفك"); return; }
+                    
+                    map.setView([user.lat, user.lng], 16);
+                    
+                    if (routingControl) map.removeControl(routingControl);
+                    routingControl = L.Routing.control({
+                        waypoints: [myLocation, L.latLng(user.lat, user.lng)],
+                        routeWhileDragging: false,
+                        addWaypoints: false,
+                        draggableWaypoints: false,
+                        language: 'ar'
+                    }).addTo(map);
                 }
             });
-        }
-
-        function showRoute(user) {
-            if (!myLocation) { alert("يرجى تفعيل الموقع (GPS) في هاتفك"); return; }
-            
-            // إزالة المسار القديم إذا وُجد
-            if (routingControl) map.removeControl(routingControl);
-
-            // رسم المسار من موقعي إلى بيت المشترك
-            routingControl = L.Routing.control({
-                waypoints: [myLocation, L.latLng(user.lat, user.lng)],
-                routeWhileDragging: false,
-                language: 'ar',
-                show: true
-            }).addTo(map);
         }
     </script>
 </body>
