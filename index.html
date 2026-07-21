@@ -2,110 +2,106 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <title>إدارة المشتركين - صيانة</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خريطة الصيانة الميدانية</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-    
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
-        /* شريط علوي للتحكم */
-        .controls { position: absolute; top: 10px; z-index: 1000; width: 95%; left: 2.5%; }
-        .btn-panel { display: flex; gap: 5px; margin-bottom: 5px; }
-        button { padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; flex: 1; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        
-        #map { height: 100vh; width: 100%; }
-        #adminPanel { position: absolute; bottom: 0; width: 100%; background: white; height: 50%; overflow-y: scroll; display: none; padding: 15px; box-sizing: border-box; z-index: 2000; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; margin: 5px; }
+        .btn-save { background: #28a745; }
+        .btn-waze { background: #007bff; }
+        .btn-del { background: #dc3545; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: right; }
+        #mapContainer { display: none; height: 300px; margin: 10px 0; }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <input type="text" id="searchInput" placeholder="ابحث عن اسم المشترك..." onkeyup="searchSubscriber()">
-    <div class="btn-panel">
-        <button onclick="toggleView('map')">خريطة</button>
-        <button onclick="toggleView('admin')">إدارة البيانات</button>
-        <button onclick="toggleLayer()">تغيير العرض (قمر صناعي)</button>
+    <h2>لوحة تحكم المشتركين</h2>
+
+    <div class="card">
+        <input type="text" id="name" placeholder="اسم المشترك">
+        <input type="tel" id="phone" placeholder="رقم الهاتف">
+        <input type="text" id="pole" placeholder="اسم العمود المفعّل">
+        <input type="date" id="start" placeholder="تاريخ التفعيل">
+        <input type="date" id="end" placeholder="تاريخ الانتهاء">
+        <button onclick="toggleMap()" class="btn btn-waze">تحديد موقع (خريطة)</button>
+        <div id="mapContainer"></div>
+        <input type="hidden" id="lat"><input type="hidden" id="lng">
+        <button onclick="saveUser()" class="btn btn-save">حفظ المشترك</button>
     </div>
-</div>
 
-<div id="map"></div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr><th>الاسم</th><th>العمود</th><th>التاريخ</th><th>إجراءات</th></tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+        </table>
+    </div>
 
-<div id="adminPanel">
-    <h3>إضافة / حذف مشترك</h3>
-    <input type="text" id="name" placeholder="الاسم">
-    <input type="text" id="pole" placeholder="رقم العمود">
-    <input type="text" id="lat" placeholder="خط العرض (اضغط الخريطة)">
-    <input type="text" id="lng" placeholder="خط الطول (اضغط الخريطة)">
-    <button onclick="saveUser()">حفظ</button>
-    <hr>
-    <div id="userList"></div>
-</div>
+    <script>
+        let map = L.map('mapContainer').setView([31.986, 44.920], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        let marker = null;
 
-<script>
-    // 1. الخرائط
-    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-    const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-    
-    var map = L.map('map', { layers: [osm] }).setView([31.986, 44.920], 16);
-    
-    let currentLayer = osm;
-    function toggleLayer() {
-        map.removeLayer(currentLayer);
-        currentLayer = (currentLayer === osm) ? sat : osm;
-        currentLayer.addTo(map);
-    }
-
-    // 2. البيانات
-    let users = JSON.parse(localStorage.getItem('myUsers')) || [];
-    let routingControl = null;
-    let myLoc = null;
-
-    // 3. الخريطة وتحديد المواقع
-    map.locate({enableHighAccuracy: true});
-    map.on('locationfound', e => { myLoc = e.latlng; });
-    map.on('click', e => { 
-        document.getElementById('lat').value = e.latlng.lat;
-        document.getElementById('lng').value = e.latlng.lng;
-    });
-
-    function render() {
-        users.forEach(u => {
-            L.marker([u.lat, u.lng]).addTo(map).bindPopup(u.name);
+        map.on('click', e => {
+            if(marker) map.removeLayer(marker);
+            marker = L.marker(e.latlng).addTo(map);
+            document.getElementById('lat').value = e.latlng.lat;
+            document.getElementById('lng').value = e.latlng.lng;
+            alert("تم التقاط الموقع!");
         });
-    }
-    render();
 
-    // 4. البحث والمسار
-    function searchSubscriber() {
-        const val = document.getElementById('searchInput').value.toLowerCase();
-        users.forEach(u => {
-            if(u.name.toLowerCase().includes(val) && val !== "") {
-                if(routingControl) map.removeControl(routingControl);
-                routingControl = L.Routing.control({
-                    waypoints: [myLoc, L.latLng(u.lat, u.lng)],
-                    routeWhileDragging: false,
-                    language: 'ar'
-                }).addTo(map);
-                map.setView([u.lat, u.lng], 18);
-            }
-        });
-    }
+        function toggleMap() { 
+            document.getElementById('mapContainer').style.display = 'block'; 
+            map.invalidateSize(); 
+        }
 
-    // 5. التبديليات
-    function toggleView(v) {
-        document.getElementById('adminPanel').style.display = (v === 'admin') ? 'block' : 'none';
-        setTimeout(() => map.invalidateSize(), 100);
-    }
+        function saveUser() {
+            const user = {
+                id: Date.now(),
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                pole: document.getElementById('pole').value,
+                start: document.getElementById('start').value,
+                end: document.getElementById('end').value,
+                lat: document.getElementById('lat').value,
+                lng: document.getElementById('lng').value
+            };
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            users.push(user);
+            localStorage.setItem('users', JSON.stringify(users));
+            location.reload();
+        }
 
-    function saveUser() {
-        users.push({ id: Date.now(), name: document.getElementById('name').value, lat: document.getElementById('lat').value, lng: document.getElementById('lng').value });
-        localStorage.setItem('myUsers', JSON.stringify(users));
-        location.reload();
-    }
-</script>
+        function render() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const tbody = document.getElementById('userTable');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.name}<br><small>${u.phone}</small></td>
+                    <td>${u.pole}</td>
+                    <td><small>من: ${u.start}<br>إلى: ${u.end}</small></td>
+                    <td>
+                        <button onclick="window.location.href='waze://?ll=${u.lat},${u.lng}&navigate=yes'" class="btn btn-waze">🚗</button>
+                        <button onclick="deleteUser(${u.id})" class="btn btn-del">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteUser(id) {
+            let users = JSON.parse(localStorage.getItem('users'));
+            users = users.filter(u => u.id !== id);
+            localStorage.setItem('users', JSON.stringify(users));
+            location.reload();
+        }
+        render();
+    </script>
 </body>
 </html>
