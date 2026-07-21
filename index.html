@@ -2,75 +2,63 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة صيانة الإنترنت الشاملة</title>
+    <title>إدارة المشتركين - احترافي</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f0f2f5; padding: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 15px; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; margin-top: 5px; }
         .btn-gps { background-color: #dc3545; }
         .btn-save { background-color: #28a745; }
         .btn-waze { background-color: #007bff; padding: 5px 10px; font-size: 14px; }
         .btn-del { background-color: #6c757d; padding: 5px 10px; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        #mapContainer { height: 200px; width: 100%; margin-top: 10px; display: none; border-radius: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .alert-red { color: #d9534f; font-weight: bold; }
+        .alert-orange { color: #f0ad4e; font-weight: bold; }
+        .alert-green { color: #5cb85c; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>إدارة المشتركين</h2>
+    <h2>لوحة تحكم المشتركين</h2>
 
-    <!-- لوحة الإضافة -->
+    <!-- شريط البحث -->
+    <input type="text" id="searchInput" placeholder="🔍 ابحث عن اسم المشترك..." onkeyup="renderTable()" style="border: 2px solid #007bff;">
+
+    <!-- لوحة الإدخال -->
     <div class="card">
         <input type="text" id="name" placeholder="اسم المشترك">
         <input type="tel" id="phone" placeholder="رقم الهاتف">
-        <input type="text" id="pole" placeholder="اسم العمود المفعّل">
-        <label>تاريخ التفعيل:</label>
+        <input type="text" id="pole" placeholder="رقم العمود">
         <input type="date" id="start">
-        <label>تاريخ الانتهاء:</label>
         <input type="date" id="end">
         
-        <input type="text" id="lat" placeholder="خط العرض (تلقائي)" readonly style="background:#eee;">
-        <input type="text" id="lng" placeholder="خط الطول (تلقائي)" readonly style="background:#eee;">
+        <input type="text" id="lat" placeholder="خط العرض (سيظهر عند ضغط GPS)" readonly style="background:#eee;">
+        <input type="text" id="lng" placeholder="خط الطول (سيظهر عند ضغط GPS)" readonly style="background:#eee;">
 
         <button onclick="getCurrentLocation()" class="btn btn-gps">📍 تحديد موقعي الحالي (GPS)</button>
         <button onclick="saveUser()" class="btn btn-save">💾 حفظ المشترك</button>
-        <div id="mapContainer"></div>
     </div>
 
-    <!-- جدول المشتركين -->
+    <!-- جدول البيانات -->
     <div class="card">
         <table>
-            <thead>
-                <tr><th>الاسم</th><th>العمود</th><th>التاريخ</th><th>أدوات</th></tr>
-            </thead>
+            <thead><tr><th>البيانات</th><th>المدة</th><th>أدوات</th></tr></thead>
             <tbody id="userTable"></tbody>
         </table>
     </div>
 
     <script>
-        // إعداد الخريطة
-        let map = L.map('mapContainer').setView([31.986, 44.920], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
         function getCurrentLocation() {
-            document.getElementById('mapContainer').style.display = 'block';
-            map.invalidateSize();
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    document.getElementById('lat').value = lat.toFixed(6);
-                    document.getElementById('lng').value = lng.toFixed(6);
-                    map.setView([lat, lng], 18);
-                    L.marker([lat, lng]).addTo(map).bindPopup("موقعك الحالي").openPopup();
-                    alert("تم تحديد الموقع!");
-                });
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+                    document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
+                    alert("تم التقاط الموقع بنجاح!");
+                }, () => { alert("يرجى تفعيل صلاحية الموقع!"); });
             }
         }
 
@@ -92,29 +80,38 @@
             location.reload();
         }
 
-        function render() {
+        function renderTable() {
+            const filter = document.getElementById('searchInput').value.toLowerCase();
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             const tbody = document.getElementById('userTable');
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.name}<br>📞${u.phone}</td>
-                    <td>${u.pole}</td>
-                    <td><small>تفعيل: ${u.start}<br>انتهاء: ${u.end}</small></td>
+            const today = new Date();
+
+            tbody.innerHTML = users.filter(u => u.name.toLowerCase().includes(filter)).map(u => {
+                const diffDays = Math.ceil((new Date(u.end) - today) / (1000 * 60 * 60 * 24));
+                let status = diffDays < 0 ? `<span class="alert-red">منتهي</span>` : 
+                             diffDays <= 3 ? `<span class="alert-orange">${diffDays} يوم متبقي</span>` : 
+                             `<span class="alert-green">${diffDays} يوم متبقي</span>`;
+
+                return `<tr>
+                    <td>${u.name}<br><small>${u.phone}</small><br>عمود: ${u.pole}</td>
+                    <td>انتهاء: ${u.end}<br>${status}</td>
                     <td>
                         <button onclick="window.location.href='waze://?ll=${u.lat},${u.lng}&navigate=yes'" class="btn btn-waze">🚗</button>
                         <button onclick="deleteUser(${u.id})" class="btn btn-del">🗑️</button>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
         }
 
         function deleteUser(id) {
-            let users = JSON.parse(localStorage.getItem('users'));
-            users = users.filter(u => u.id !== id);
-            localStorage.setItem('users', JSON.stringify(users));
-            location.reload();
+            if(confirm("هل أنت متأكد من الحذف؟")) {
+                let users = JSON.parse(localStorage.getItem('users'));
+                users = users.filter(u => u.id !== id);
+                localStorage.setItem('users', JSON.stringify(users));
+                renderTable();
+            }
         }
-        render();
+        renderTable();
     </script>
 </body>
 </html>
