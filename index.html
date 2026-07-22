@@ -8,153 +8,127 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #020617; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
+        :root { --primary: #0f172a; --accent: #3b82f6; --bg: #f8fafc; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 0; }
         
-        /* تصميم أيقونة "أنت" النبضية */
-        .my-marker { background-color: #38bdf8; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 15px #38bdf8; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(56, 189, 248, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }
-        
-        /* تصميم أيقونة الزبون */
-        .customer-marker { background-color: #ef4444; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #ef4444; }
-
         /* واجهة الدخول */
-        #login-page { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b, #020617); }
-        .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); width: 85%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #334155; border-radius: 10px; background: #0f172a; color: white; }
-        .btn-login { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--accent); color: var(--primary); font-weight: bold; cursor: pointer; }
+        #login-page { height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; }
         
         /* واجهة النظام */
         #app-container { display: none; }
-        .header { background: #0f172a; padding: 25px; text-align: center; border-bottom: 2px solid var(--accent); }
-        .nav { display: flex; justify-content: space-around; padding: 15px; background: #1e293b; margin: 20px; border-radius: 15px; }
-        .page { padding: 0 20px; display: none; }
-        .active { display: block; }
-        .card { background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 15px; }
-        #map-area { display: none; margin-bottom: 20px; border: 2px solid var(--accent); border-radius: 15px; overflow: hidden; }
-        #map { height: 350px; width: 100%; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        #map-area { display: none; margin: 15px; border: 4px solid var(--accent); border-radius: 20px; overflow: hidden; }
+        #map { height: 400px; width: 100%; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; background: var(--accent); }
     </style>
 </head>
 <body>
 
     <div id="login-page">
         <div class="login-card">
-            <h3>🔐 FTTH PRO - دخول</h3>
+            <h3>🔐 FTTH PRO</h3>
             <input type="text" id="user" placeholder="اسم المستخدم">
             <input type="password" id="pass" placeholder="كلمة المرور">
-            <button class="btn-login" onclick="login()">دخول إلى النظام</button>
+            <button class="btn-login" onclick="login()">دخول</button>
         </div>
     </div>
 
     <div id="app-container">
-        <div class="header"><h3>FTTH PRO - لوحة التحكم</h3></div>
+        <div class="header"><h3>لوحة تحكم FTTH PRO</h3></div>
         
-        <div class="nav">
-            <button onclick="showPage('add-page')" style="background:none; border:none; color:white; cursor:pointer;">🏠 إضافة</button>
-            <button onclick="showPage('list-page'); renderList()" style="background:none; border:none; color:white; cursor:pointer;">📋 المشتركين</button>
+        <div class="card">
+            <input type="text" id="name" placeholder="اسم المشترك">
+            <input type="text" id="pole" placeholder="اسم البوكس">
+            <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
+            <button class="btn" style="background:#64748b;" onclick="getLocation()">📍 تحديد موقعي الحالي</button>
+            <button class="btn" onclick="saveUser()">💾 حفظ المشترك</button>
         </div>
 
-        <div id="add-page" class="page active">
-            <div class="card">
-                <h3>إضافة مشترك جديد</h3>
-                <input type="hidden" id="editId">
-                <input type="text" id="name" placeholder="الاسم">
-                <input type="text" id="pole" placeholder="اسم البوكس">
-                <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
-                <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي الحالي</button>
-                <button class="btn" style="background:var(--accent);" onclick="saveUser()">💾 حفظ البيانات</button>
-            </div>
+        <div id="map-area">
+            <div id="map"></div>
+            <button class="btn" style="background:#ef4444;" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button>
         </div>
 
-        <div id="list-page" class="page">
-            <div id="map-area">
-                <div id="map"></div>
-                <button class="btn" style="background:#991b1b;" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button>
-            </div>
-            <div id="userTable"></div>
-        </div>
+        <div id="userTable"></div>
     </div>
 
     <script>
         let map;
         function login() {
             if(document.getElementById('user').value === "1" && document.getElementById('pass').value === "2442") {
-                sessionStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('app-container').style.display = 'block';
-            } else { alert("❌ بيانات دخول خاطئة!"); }
-        }
-
-        window.onload = () => {
-            if(sessionStorage.getItem('isLoggedIn') === 'true') {
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('app-container').style.display = 'block';
-            }
-        };
-
-        function showPage(id) { 
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+                renderList();
+            } else { alert("❌ بيانات الدخول خاطئة!"); }
         }
 
         function getLocation() {
             navigator.geolocation.getCurrentPosition(pos => {
                 document.getElementById('coords').value = `${pos.coords.latitude},${pos.coords.longitude}`;
-                alert("✅ تم تحديد الموقع بدقة");
+                alert("✅ تم تحديد الموقع");
             }, null, {enableHighAccuracy: true});
         }
 
         function saveUser() {
-            const id = document.getElementById('editId').value;
             let users = JSON.parse(localStorage.getItem('users') || '[]');
-            const u = { 
-                id: id ? parseInt(id) : Date.now(), 
-                name: document.getElementById('name').value, 
-                pole: document.getElementById('pole').value,
-                coords: document.getElementById('coords').value 
-            };
-            if(id) users = users.map(item => item.id == id ? u : item);
-            else users.push(u);
+            const u = { name: document.getElementById('name').value, pole: document.getElementById('pole').value, coords: document.getElementById('coords').value };
+            users.push(u);
             localStorage.setItem('users', JSON.stringify(users));
-            alert("تم الحفظ!"); location.reload();
+            renderList();
+            alert("تم الحفظ!");
         }
 
         function showMap(coords) {
             document.getElementById('map-area').style.display = 'block';
             if(map) map.remove();
-            
             const [lat, lng] = coords.split(',').map(Number);
             map = L.map('map').setView([lat, lng], 17);
             
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            // ستايل Waze الفاتح
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             
-            // أيقونة الزبون
-            const customerIcon = L.divIcon({ className: 'customer-marker', iconSize: [15, 15] });
-            L.marker([lat, lng], {icon: customerIcon}).addTo(map).bindPopup("📍 موقع الزبون").openPopup();
+            // موقع الزبون
+            const custIcon = L.divIcon({ html: '<div style="background:#ef4444; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow:0 0 5px #000;"></div>', className: '' });
+            L.marker([lat, lng], {icon: custIcon}).addTo(map).bindPopup("📍 موقع الزبون").openPopup();
             
-            // أيقونة "أنت"
+            // موقعك (سهم ملاحة متطور)
             navigator.geolocation.getCurrentPosition(pos => {
-                const myLat = pos.coords.latitude;
-                const myLng = pos.coords.longitude;
-                const myIcon = L.divIcon({ className: 'my-marker', iconSize: [16, 16] });
+                const navArrow = L.divIcon({
+                    html: '<div style="font-size:32px; color:#3b82f6; text-shadow: 0 0 5px rgba(255,255,255,0.8); transform:rotate(45deg); filter: drop-shadow(0 0 2px black);">➤</div>',
+                    className: ''
+                });
                 
-                L.marker([myLat, myLng], {icon: myIcon}).addTo(map).bindPopup("أنت هنا");
-                L.polyline([[myLat, myLng], [lat, lng]], {
-                    color: '#38bdf8', dashArray: '10, 10', weight: 4, opacity: 0.8
-                }).addTo(map).bindTooltip("المسار للزبون");
+                L.marker([pos.coords.latitude, pos.coords.longitude], {icon: navArrow}).addTo(map).bindPopup("أنت هنا");
+                
+                // مسار Waze
+                L.polyline([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {
+                    color: '#3b82f6', weight: 8, opacity: 0.8, lineJoin: 'round'
+                }).addTo(map);
+                
+                map.fitBounds([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {padding: [50, 50]});
             }, null, {enableHighAccuracy: true});
         }
 
         function renderList() {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
-            document.getElementById('userTable').innerHTML = users.map(u => 
+            document.getElementById('userTable').innerHTML = users.map((u, index) => 
                 `<div class="card">
-                    <strong>${u.name}</strong><br>
-                    <small>بوكس: ${u.pole}</small>
-                    <button class="btn" style="background:var(--accent);" onclick="showMap('${u.coords}')">🗺️ عرض المسار</button>
+                    <strong>${u.name}</strong><br>بوكس: ${u.pole}
+                    <button class="btn" onclick="showMap('${u.coords}')">🗺️ الانتقال للزبون (Waze Style)</button>
+                    <button class="btn" style="background:#991b1b;" onclick="deleteUser(${index})">🗑️ حذف</button>
                 </div>`
             ).join('');
+        }
+
+        function deleteUser(index) {
+            let users = JSON.parse(localStorage.getItem('users'));
+            users.splice(index, 1);
+            localStorage.setItem('users', JSON.stringify(users));
+            renderList();
         }
     </script>
 </body>
