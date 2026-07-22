@@ -2,72 +2,79 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FTTH PRO | نظام الإدارة المطور</title>
+    <title>FTTH PRO | النظام الذكي</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <!-- مكتبة الخرائط Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.08); --accent: #38bdf8; --bg: #020617; --danger: #ef4444; --success: #22c55e; }
+        :root { --glass: rgba(255, 255, 255, 0.08); --accent: #38bdf8; --bg: #020617; --success: #22c55e; --danger: #ef4444; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; min-height: 100vh; }
         
-        /* Glassmorphism Styling */
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; }
+        .header { padding: 25px; text-align: center; font-size: 1.4rem; color: var(--accent); font-weight: bold; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin: 15px; }
+        input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; }
         .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.3s; }
-        .btn:active { transform: scale(0.98); }
         
-        #app-container, #details-page { display: none; }
-        #map-area { display: none; margin: 15px; border: 3px solid var(--accent); border-radius: 20px; overflow: hidden; }
-        #map { height: 350px; width: 100%; }
+        /* التبويبات */
+        .tabs { display: flex; gap: 10px; padding: 0 15px 15px 15px; }
+        .tab-btn { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; cursor: pointer; }
+        .tab-btn.active { background: var(--accent); color: #020617; }
         
-        .header { padding: 20px; text-align: center; font-size: 1.5rem; color: var(--accent); font-weight: bold; }
-        .user-item { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
-        .user-item:hover { background: rgba(56, 189, 248, 0.1); }
+        #app-container, #details-page, #map-area { display: none; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        #map { height: 350px; width: 100%; border-radius: 20px; }
     </style>
 </head>
 <body>
 
-    <!-- Login Page -->
+    <!-- Login -->
     <div id="login-page" style="height:100vh; display:flex; align-items:center; justify-content:center;">
-        <div class="glass-card" style="width: 80%; max-width: 350px;">
-            <h3 style="text-align:center;">FTTH PRO ⚡</h3>
+        <div class="glass-card" style="width: 300px; text-align:center;">
+            <h3>🔐 FTTH PRO</h3>
             <input type="password" id="pass" placeholder="كلمة المرور">
-            <button class="btn" style="background:var(--accent);" onclick="login()">دخول إلى النظام</button>
+            <button class="btn" style="background:var(--accent);" onclick="login()">دخول</button>
         </div>
     </div>
 
-    <!-- Main App Container -->
+    <!-- App -->
     <div id="app-container">
         <div class="header">لوحة المشتركين الذكية</div>
         
-        <div class="glass-card">
-            <input type="text" id="name" placeholder="اسم المشترك">
-            <input type="text" id="pole" placeholder="اسم البوكس">
-            <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
-            <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي</button>
-            <button class="btn" style="background:var(--success);" onclick="saveUser()">💾 حفظ المشترك</button>
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-add" onclick="showSection('add')">➕ إضافة</button>
+            <button class="tab-btn" id="btn-list" onclick="showSection('list')">👥 المشتركين</button>
         </div>
 
-        <div style="margin: 0 15px;">
-            <input type="text" id="searchInput" placeholder="🔍 بحث سريع..." onkeyup="filterUsers()">
+        <div id="section-add">
+            <div class="glass-card">
+                <input type="text" id="name" placeholder="اسم المشترك">
+                <input type="text" id="pole" placeholder="اسم البوكس">
+                <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
+                <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي</button>
+                <button class="btn" style="background:var(--success);" onclick="saveUser()">💾 حفظ المشترك</button>
+            </div>
         </div>
-        <div id="userList"></div>
+
+        <div id="section-list">
+            <div style="padding: 0 15px;">
+                <input type="text" id="searchInput" placeholder="🔍 بحث سريع..." onkeyup="filterUsers()">
+            </div>
+            <div id="userList" class="glass-card"></div>
+        </div>
     </div>
 
-    <!-- Details Page -->
+    <!-- Details -->
     <div id="details-page">
         <div class="glass-card">
-            <button class="btn" style="background:#475569;" onclick="backToList()">⬅ رجوع للقائمة</button>
+            <button class="btn" style="background:#475569;" onclick="backToList()">⬅ رجوع</button>
             <h2 id="detName" style="color:var(--accent);"></h2>
-            <p>📦 البوكس: <span id="detPole"></span></p>
-            <p>📡 الإحداثيات: <span id="detCoords"></span></p>
-            <button class="btn" style="background:var(--accent);" onclick="showMapOnDetails()">🗺️ خريطة الملاحة (Waze)</button>
-            <button class="btn" style="background:var(--success);" onclick="openGoogleMaps()">📍 فتح في Google Maps</button>
+            <p>📦 بوكس: <span id="detPole"></span></p>
+            <button class="btn" style="background:var(--accent);" onclick="showMapOnDetails()">🗺️ خريطة Waze</button>
+            <button class="btn" style="background:var(--success);" onclick="openGoogleMaps()">📍 خرائط Google</button>
+            <button class="btn" style="background:var(--danger);" onclick="deleteUser()">🗑️ حذف المشترك</button>
         </div>
-        <div id="map-area">
+        <div id="map-area" class="glass-card">
             <div id="map"></div>
             <button class="btn" style="background:var(--danger);" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button>
         </div>
@@ -75,22 +82,28 @@
 
     <script>
         let users = JSON.parse(localStorage.getItem('users') || '[]');
-        let map;
+        let currentIdx = -1;
 
-        function login() { if(document.getElementById('pass').value === "2442") { document.getElementById('login-page').style.display='none'; document.getElementById('app-container').style.display='block'; renderList(); } else { alert("❌ كلمة مرور خاطئة!"); } }
+        function login() { if(document.getElementById('pass').value === "2442") { document.getElementById('login-page').style.display='none'; document.getElementById('app-container').style.display='block'; showSection('add'); renderList(); } }
+        
+        function showSection(sec) {
+            document.getElementById('section-add').style.display = (sec === 'add') ? 'block' : 'none';
+            document.getElementById('section-list').style.display = (sec === 'list') ? 'block' : 'none';
+            document.getElementById('btn-add').className = (sec === 'add') ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('btn-list').className = (sec === 'list') ? 'tab-btn active' : 'tab-btn';
+        }
 
-        function getLocation() { navigator.geolocation.getCurrentPosition(pos => { document.getElementById('coords').value = `${pos.coords.latitude},${pos.coords.longitude}`; alert("✅ تم تحديد الموقع"); }, null, {enableHighAccuracy: true}); }
+        function getLocation() { navigator.geolocation.getCurrentPosition(p => document.getElementById('coords').value = `${p.coords.latitude},${p.coords.longitude}`); }
 
         function saveUser() {
-            const u = { name: document.getElementById('name').value, pole: document.getElementById('pole').value, coords: document.getElementById('coords').value };
-            users.push(u);
+            users.push({ name: document.getElementById('name').value, pole: document.getElementById('pole').value, coords: document.getElementById('coords').value });
             localStorage.setItem('users', JSON.stringify(users));
-            alert("تم الحفظ!"); renderList();
+            renderList(); alert("✅ تم الحفظ"); showSection('list');
         }
 
         function renderList() {
             document.getElementById('userList').innerHTML = users.map((u, i) => `
-                <div class="glass-card user-item" onclick="viewDetails(${i})">
+                <div class="user-item" onclick="viewDetails(${i})">
                     <div><strong>${u.name}</strong><br><small>بوكس: ${u.pole}</small></div>
                     <span>➤</span>
                 </div>
@@ -99,37 +112,30 @@
 
         function filterUsers() {
             const term = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.user-item').forEach(card => card.style.display = card.textContent.toLowerCase().includes(term) ? 'flex' : 'none');
+            document.querySelectorAll('.user-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(term) ? 'flex' : 'none');
         }
 
-        function viewDetails(index) {
-            const u = users[index];
-            document.getElementById('detName').innerText = u.name;
-            document.getElementById('detPole').innerText = u.pole;
-            document.getElementById('detCoords').innerText = u.coords;
+        function viewDetails(i) {
+            currentIdx = i;
+            document.getElementById('detName').innerText = users[i].name;
+            document.getElementById('detPole').innerText = users[i].pole;
             document.getElementById('app-container').style.display = 'none';
             document.getElementById('details-page').style.display = 'block';
         }
 
         function backToList() { document.getElementById('details-page').style.display = 'none'; document.getElementById('app-container').style.display = 'block'; }
         
-        function openGoogleMaps() { const c = document.getElementById('detCoords').innerText; window.open(`https://www.google.com/maps/dir/?api=1&destination=${c}`, '_blank'); }
+        function openGoogleMaps() { window.open(`https://www.google.com/maps/dir/?api=1&destination=${users[currentIdx].coords}`, '_blank'); }
+
+        function deleteUser() { users.splice(currentIdx, 1); localStorage.setItem('users', JSON.stringify(users)); renderList(); backToList(); }
 
         function showMapOnDetails() {
             document.getElementById('map-area').style.display = 'block';
-            if(map) map.remove();
-            const coords = document.getElementById('detCoords').innerText.split(',');
-            const lat = parseFloat(coords[0]), lng = parseFloat(coords[1]);
-            map = L.map('map').setView([lat, lng], 17);
+            const [lat, lng] = users[currentIdx].coords.split(',').map(Number);
+            const map = L.map('map').setView([lat, lng], 17);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            
-            // سهم الملاحة المطور
-            navigator.geolocation.getCurrentPosition(pos => {
-                const navArrow = L.divIcon({ html: '<div style="font-size:32px; color:#3b82f6; transform:rotate(45deg); filter: drop-shadow(0 0 2px black);">➤</div>', className: '' });
-                L.marker([pos.coords.latitude, pos.coords.longitude], {icon: navArrow}).addTo(map).bindPopup("أنت هنا");
-                L.polyline([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], { color: '#3b82f6', weight: 8, opacity: 0.8 }).addTo(map);
-                map.fitBounds([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {padding: [50, 50]});
-            }, null, {enableHighAccuracy: true});
+            const arrow = L.divIcon({ html: '<div style="font-size:32px; color:#3b82f6; transform:rotate(45deg);">➤</div>', className: '' });
+            L.marker([lat, lng], {icon: arrow}).addTo(map);
         }
     </script>
 </body>
