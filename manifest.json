@@ -1,14 +1,15 @@
 {
   "name": "FTTH PRO",
   "short_name": "FTTH",
+  "description": "نظام الإدارة السحابي لشبكات الألياف الضوئية - تم التطوير من قبل فريق UROXA",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#38bdf8",
   "icons": [
     {
-      "src": "https://img.icons8.com/fluency/96/router.png",
-      "sizes": "96x96",
+      "src": "./icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
