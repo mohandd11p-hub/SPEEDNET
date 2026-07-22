@@ -6,16 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="manifest" href="manifest.json">
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.08); --accent: #38bdf8; --bg: #020617; --success: #22c55e; --danger: #ef4444; }
+        :root { --glass: rgba(255, 255, 255, 0.08); --accent: #38bdf8; --bg: #020617; --success: #22c55e; --danger: #ef4444; --waze: #3498db; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; min-height: 100vh; }
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin: 15px; }
         input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; }
@@ -29,7 +26,6 @@
 </head>
 <body>
 
-    <!-- Login -->
     <div id="login-page" style="height:100vh; display:flex; align-items:center; justify-content:center;">
         <div class="glass-card" style="width: 300px; text-align:center;">
             <h3>🔐 FTTH PRO</h3>
@@ -38,9 +34,8 @@
         </div>
     </div>
 
-    <!-- App Container -->
     <div id="app-container">
-        <div class="header" style="padding: 20px; text-align: center; color: var(--accent);">لوحة المشتركين السحابية</div>
+        <div style="padding: 20px; text-align: center; color: var(--accent);">لوحة المشتركين السحابية</div>
         <div class="tabs" style="display: flex; gap: 10px; padding: 0 15px 15px 15px;">
             <button class="tab-btn active" id="btn-add" onclick="showSection('add')">➕ إضافة</button>
             <button class="tab-btn" id="btn-list" onclick="showSection('list')">👥 المشتركين</button>
@@ -62,21 +57,21 @@
         </div>
     </div>
 
-    <!-- Details -->
     <div id="details-page">
         <div class="glass-card">
             <button class="btn" style="background:#475569;" onclick="backToList()">⬅ رجوع</button>
             <h2 id="detName" style="color:var(--accent);"></h2>
             <p>📦 بوكس: <span id="detPole"></span></p>
-            <button class="btn" style="background:var(--accent);" onclick="showMapOnDetails()">🗺️ خريطة Waze</button>
+            
+            <button class="btn" style="background:var(--waze);" onclick="openWaze()">🚗 خريطة Waze</button>
             <button class="btn" style="background:var(--success);" onclick="openGoogleMaps()">📍 خرائط Google</button>
+            <button class="btn" style="background:#64748b;" onclick="copyCoords()">📋 نسخ الإحداثيات</button>
             <button class="btn" style="background:var(--danger);" onclick="deleteUser()">🗑️ حذف المشترك</button>
         </div>
-        <div id="map-area" class="glass-card"><div id="map"></div><button class="btn" style="background:var(--danger);" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button></div>
+        <div id="map-area" class="glass-card"><div id="map"></div><button class="btn" style="background:var(--danger);" onclick="closeMap()">إغلاق الخريطة</button></div>
     </div>
 
     <script>
-        // --- إعداد Firebase ---
         const firebaseConfig = {
             apiKey: "AiZaSyCXCJlcPudupo6LS84cxppl12RliZMzCuY",
             authDomain: "ftth-cf317.firebaseapp.com",
@@ -91,6 +86,7 @@
 
         let users = [];
         let currentIdx = -1;
+        let mapInstance = null;
 
         function login() { if(document.getElementById('pass').value === "2442") { document.getElementById('login-page').style.display='none'; document.getElementById('app-container').style.display='block'; showSection('add'); renderList(); } }
 
@@ -109,13 +105,13 @@
                 pole: document.getElementById('pole').value,
                 coords: document.getElementById('coords').value,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => { alert("✅ تم الحفظ في السحابة"); renderList(); showSection('list'); });
+            }).then(() => { alert("✅ تم الحفظ"); renderList(); showSection('list'); });
         }
 
         function renderList() {
-            db.collection("users").orderBy("timestamp", "desc").get().then((querySnapshot) => {
+            db.collection("users").orderBy("timestamp", "desc").get().then((qs) => {
                 users = [];
-                querySnapshot.forEach((doc) => users.push({ id: doc.id, ...doc.data() }));
+                qs.forEach((doc) => users.push({ id: doc.id, ...doc.data() }));
                 document.getElementById('userList').innerHTML = users.map((u, i) => `
                     <div class="user-item" onclick="viewDetails(${i})">
                         <div><strong>${u.name}</strong><br><small>بوكس: ${u.pole}</small></div>
@@ -135,21 +131,33 @@
 
         function backToList() { document.getElementById('details-page').style.display = 'none'; document.getElementById('app-container').style.display = 'block'; }
 
+        // وظائف التنقل
+        function openGoogleMaps() {
+            const coords = users[currentIdx].coords;
+            window.location.href = `intent://maps.google.com/maps?daddr=${coords}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+        }
+
+        function openWaze() {
+            const coords = users[currentIdx].coords;
+            window.location.href = `waze://?ll=${coords}&navigate=yes`;
+        }
+
+        function copyCoords() {
+            navigator.clipboard.writeText(users[currentIdx].coords);
+            alert("📋 تم نسخ الإحداثيات");
+        }
+
+        function closeMap() { document.getElementById('map-area').style.display='none'; if(mapInstance) mapInstance.remove(); }
+
         function deleteUser() {
-            db.collection("users").doc(users[currentIdx].id).delete().then(() => { alert("🗑️ تم الحذف"); backToList(); renderList(); });
+            if(confirm("هل أنت متأكد من حذف المشترك؟")) {
+                db.collection("users").doc(users[currentIdx].id).delete().then(() => { alert("🗑️ تم الحذف"); backToList(); renderList(); });
+            }
         }
 
         function filterUsers() {
             const term = document.getElementById('searchInput').value.toLowerCase();
             document.querySelectorAll('.user-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(term) ? 'flex' : 'none');
-        }
-
-        function showMapOnDetails() {
-            document.getElementById('map-area').style.display = 'block';
-            const [lat, lng] = users[currentIdx].coords.split(',').map(Number);
-            const map = L.map('map').setView([lat, lng], 17);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            L.marker([lat, lng]).addTo(map).bindPopup(users[currentIdx].name);
         }
     </script>
 </body>
