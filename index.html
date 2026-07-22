@@ -2,133 +2,134 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FTTH PRO - نظام الإدارة المطور</title>
+    <title>FTTH PRO | نظام الإدارة المطور</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <!-- مكتبة الخرائط Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --primary: #0f172a; --accent: #3b82f6; --bg: #f8fafc; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding: 0; }
+        :root { --glass: rgba(255, 255, 255, 0.08); --accent: #38bdf8; --bg: #020617; --danger: #ef4444; --success: #22c55e; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; min-height: 100vh; }
         
-        /* واجهة الدخول */
-        #login-page { height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; }
-        .login-card { background: white; padding: 40px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
-        .btn-login { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; }
+        /* Glassmorphism Styling */
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         
-        /* واجهة النظام */
-        #app-container { display: none; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        #map-area { display: none; margin: 15px; border: 4px solid var(--accent); border-radius: 20px; overflow: hidden; }
-        #map { height: 400px; width: 100%; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; background: var(--accent); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.3s; }
+        .btn:active { transform: scale(0.98); }
+        
+        #app-container, #details-page { display: none; }
+        #map-area { display: none; margin: 15px; border: 3px solid var(--accent); border-radius: 20px; overflow: hidden; }
+        #map { height: 350px; width: 100%; }
+        
+        .header { padding: 20px; text-align: center; font-size: 1.5rem; color: var(--accent); font-weight: bold; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
+        .user-item:hover { background: rgba(56, 189, 248, 0.1); }
     </style>
 </head>
 <body>
 
-    <div id="login-page">
-        <div class="login-card">
-            <h3>🔐 FTTH PRO</h3>
-            <input type="text" id="user" placeholder="اسم المستخدم">
+    <!-- Login Page -->
+    <div id="login-page" style="height:100vh; display:flex; align-items:center; justify-content:center;">
+        <div class="glass-card" style="width: 80%; max-width: 350px;">
+            <h3 style="text-align:center;">FTTH PRO ⚡</h3>
             <input type="password" id="pass" placeholder="كلمة المرور">
-            <button class="btn-login" onclick="login()">دخول</button>
+            <button class="btn" style="background:var(--accent);" onclick="login()">دخول إلى النظام</button>
         </div>
     </div>
 
+    <!-- Main App Container -->
     <div id="app-container">
-        <div class="header"><h3>لوحة تحكم FTTH PRO</h3></div>
+        <div class="header">لوحة المشتركين الذكية</div>
         
-        <div class="card">
+        <div class="glass-card">
             <input type="text" id="name" placeholder="اسم المشترك">
             <input type="text" id="pole" placeholder="اسم البوكس">
             <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
-            <button class="btn" style="background:#64748b;" onclick="getLocation()">📍 تحديد موقعي الحالي</button>
-            <button class="btn" onclick="saveUser()">💾 حفظ المشترك</button>
+            <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي</button>
+            <button class="btn" style="background:var(--success);" onclick="saveUser()">💾 حفظ المشترك</button>
         </div>
 
+        <div style="margin: 0 15px;">
+            <input type="text" id="searchInput" placeholder="🔍 بحث سريع..." onkeyup="filterUsers()">
+        </div>
+        <div id="userList"></div>
+    </div>
+
+    <!-- Details Page -->
+    <div id="details-page">
+        <div class="glass-card">
+            <button class="btn" style="background:#475569;" onclick="backToList()">⬅ رجوع للقائمة</button>
+            <h2 id="detName" style="color:var(--accent);"></h2>
+            <p>📦 البوكس: <span id="detPole"></span></p>
+            <p>📡 الإحداثيات: <span id="detCoords"></span></p>
+            <button class="btn" style="background:var(--accent);" onclick="showMapOnDetails()">🗺️ خريطة الملاحة (Waze)</button>
+            <button class="btn" style="background:var(--success);" onclick="openGoogleMaps()">📍 فتح في Google Maps</button>
+        </div>
         <div id="map-area">
             <div id="map"></div>
-            <button class="btn" style="background:#ef4444;" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button>
+            <button class="btn" style="background:var(--danger);" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button>
         </div>
-
-        <div id="userTable"></div>
     </div>
 
     <script>
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
         let map;
-        function login() {
-            if(document.getElementById('user').value === "1" && document.getElementById('pass').value === "2442") {
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('app-container').style.display = 'block';
-                renderList();
-            } else { alert("❌ بيانات الدخول خاطئة!"); }
-        }
 
-        function getLocation() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                document.getElementById('coords').value = `${pos.coords.latitude},${pos.coords.longitude}`;
-                alert("✅ تم تحديد الموقع");
-            }, null, {enableHighAccuracy: true});
-        }
+        function login() { if(document.getElementById('pass').value === "2442") { document.getElementById('login-page').style.display='none'; document.getElementById('app-container').style.display='block'; renderList(); } else { alert("❌ كلمة مرور خاطئة!"); } }
+
+        function getLocation() { navigator.geolocation.getCurrentPosition(pos => { document.getElementById('coords').value = `${pos.coords.latitude},${pos.coords.longitude}`; alert("✅ تم تحديد الموقع"); }, null, {enableHighAccuracy: true}); }
 
         function saveUser() {
-            let users = JSON.parse(localStorage.getItem('users') || '[]');
             const u = { name: document.getElementById('name').value, pole: document.getElementById('pole').value, coords: document.getElementById('coords').value };
             users.push(u);
             localStorage.setItem('users', JSON.stringify(users));
-            renderList();
-            alert("تم الحفظ!");
-        }
-
-        function showMap(coords) {
-            document.getElementById('map-area').style.display = 'block';
-            if(map) map.remove();
-            const [lat, lng] = coords.split(',').map(Number);
-            map = L.map('map').setView([lat, lng], 17);
-            
-            // ستايل Waze الفاتح
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            
-            // موقع الزبون
-            const custIcon = L.divIcon({ html: '<div style="background:#ef4444; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow:0 0 5px #000;"></div>', className: '' });
-            L.marker([lat, lng], {icon: custIcon}).addTo(map).bindPopup("📍 موقع الزبون").openPopup();
-            
-            // موقعك (سهم ملاحة متطور)
-            navigator.geolocation.getCurrentPosition(pos => {
-                const navArrow = L.divIcon({
-                    html: '<div style="font-size:32px; color:#3b82f6; text-shadow: 0 0 5px rgba(255,255,255,0.8); transform:rotate(45deg); filter: drop-shadow(0 0 2px black);">➤</div>',
-                    className: ''
-                });
-                
-                L.marker([pos.coords.latitude, pos.coords.longitude], {icon: navArrow}).addTo(map).bindPopup("أنت هنا");
-                
-                // مسار Waze
-                L.polyline([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {
-                    color: '#3b82f6', weight: 8, opacity: 0.8, lineJoin: 'round'
-                }).addTo(map);
-                
-                map.fitBounds([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {padding: [50, 50]});
-            }, null, {enableHighAccuracy: true});
+            alert("تم الحفظ!"); renderList();
         }
 
         function renderList() {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            document.getElementById('userTable').innerHTML = users.map((u, index) => 
-                `<div class="card">
-                    <strong>${u.name}</strong><br>بوكس: ${u.pole}
-                    <button class="btn" onclick="showMap('${u.coords}')">🗺️ الانتقال للزبون (Waze Style)</button>
-                    <button class="btn" style="background:#991b1b;" onclick="deleteUser(${index})">🗑️ حذف</button>
-                </div>`
-            ).join('');
+            document.getElementById('userList').innerHTML = users.map((u, i) => `
+                <div class="glass-card user-item" onclick="viewDetails(${i})">
+                    <div><strong>${u.name}</strong><br><small>بوكس: ${u.pole}</small></div>
+                    <span>➤</span>
+                </div>
+            `).join('');
         }
 
-        function deleteUser(index) {
-            let users = JSON.parse(localStorage.getItem('users'));
-            users.splice(index, 1);
-            localStorage.setItem('users', JSON.stringify(users));
-            renderList();
+        function filterUsers() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.user-item').forEach(card => card.style.display = card.textContent.toLowerCase().includes(term) ? 'flex' : 'none');
+        }
+
+        function viewDetails(index) {
+            const u = users[index];
+            document.getElementById('detName').innerText = u.name;
+            document.getElementById('detPole').innerText = u.pole;
+            document.getElementById('detCoords').innerText = u.coords;
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('details-page').style.display = 'block';
+        }
+
+        function backToList() { document.getElementById('details-page').style.display = 'none'; document.getElementById('app-container').style.display = 'block'; }
+        
+        function openGoogleMaps() { const c = document.getElementById('detCoords').innerText; window.open(`https://www.google.com/maps/dir/?api=1&destination=${c}`, '_blank'); }
+
+        function showMapOnDetails() {
+            document.getElementById('map-area').style.display = 'block';
+            if(map) map.remove();
+            const coords = document.getElementById('detCoords').innerText.split(',');
+            const lat = parseFloat(coords[0]), lng = parseFloat(coords[1]);
+            map = L.map('map').setView([lat, lng], 17);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+            
+            // سهم الملاحة المطور
+            navigator.geolocation.getCurrentPosition(pos => {
+                const navArrow = L.divIcon({ html: '<div style="font-size:32px; color:#3b82f6; transform:rotate(45deg); filter: drop-shadow(0 0 2px black);">➤</div>', className: '' });
+                L.marker([pos.coords.latitude, pos.coords.longitude], {icon: navArrow}).addTo(map).bindPopup("أنت هنا");
+                L.polyline([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], { color: '#3b82f6', weight: 8, opacity: 0.8 }).addTo(map);
+                map.fitBounds([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {padding: [50, 50]});
+            }, null, {enableHighAccuracy: true});
         }
     </script>
 </body>
