@@ -2,19 +2,18 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FTTH PRO - نظام الإدارة المتطور</title>
+    <title>FTTH PRO - نظام الإدارة المطور</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <!-- مكتبة الخرائط -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #020617; --danger: #ef4444; }
+        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #020617; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
         
-        /* تصميم النبض لموقعك */
-        .my-marker { background-color: #38bdf8; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px #38bdf8; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }
+        /* تصميم أيقونة "أنت" النبضية */
+        .my-marker { background-color: #38bdf8; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 15px #38bdf8; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(56, 189, 248, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }
         
         /* تصميم أيقونة الزبون */
         .customer-marker { background-color: #ef4444; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #ef4444; }
@@ -22,10 +21,10 @@
         /* واجهة الدخول */
         #login-page { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b, #020617); }
         .login-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); width: 85%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #334155; border-radius: 10px; background: #0f172a; color: white; box-sizing: border-box; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #334155; border-radius: 10px; background: #0f172a; color: white; }
         .btn-login { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--accent); color: var(--primary); font-weight: bold; cursor: pointer; }
         
-        /* واجهة التطبيق */
+        /* واجهة النظام */
         #app-container { display: none; }
         .header { background: #0f172a; padding: 25px; text-align: center; border-bottom: 2px solid var(--accent); }
         .nav { display: flex; justify-content: space-around; padding: 15px; background: #1e293b; margin: 20px; border-radius: 15px; }
@@ -63,7 +62,7 @@
                 <input type="text" id="name" placeholder="الاسم">
                 <input type="text" id="pole" placeholder="اسم البوكس">
                 <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
-                <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي</button>
+                <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي الحالي</button>
                 <button class="btn" style="background:var(--accent);" onclick="saveUser()">💾 حفظ البيانات</button>
             </div>
         </div>
@@ -84,7 +83,7 @@
                 sessionStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('app-container').style.display = 'block';
-            } else { alert("❌ خطأ!"); }
+            } else { alert("❌ بيانات دخول خاطئة!"); }
         }
 
         window.onload = () => {
@@ -102,8 +101,8 @@
         function getLocation() {
             navigator.geolocation.getCurrentPosition(pos => {
                 document.getElementById('coords').value = `${pos.coords.latitude},${pos.coords.longitude}`;
-                alert("✅ تم تحديد الموقع");
-            });
+                alert("✅ تم تحديد الموقع بدقة");
+            }, null, {enableHighAccuracy: true});
         }
 
         function saveUser() {
@@ -128,19 +127,23 @@
             const [lat, lng] = coords.split(',').map(Number);
             map = L.map('map').setView([lat, lng], 17);
             
-            // ستايل Dark Matter
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
             
-            // موقع الزبون (أحمر)
-            const customerIcon = L.divIcon({ className: 'customer-marker', iconSize: [20, 20] });
+            // أيقونة الزبون
+            const customerIcon = L.divIcon({ className: 'customer-marker', iconSize: [15, 15] });
             L.marker([lat, lng], {icon: customerIcon}).addTo(map).bindPopup("📍 موقع الزبون").openPopup();
             
-            // موقعك (نبض أزرق)
+            // أيقونة "أنت"
             navigator.geolocation.getCurrentPosition(pos => {
+                const myLat = pos.coords.latitude;
+                const myLng = pos.coords.longitude;
                 const myIcon = L.divIcon({ className: 'my-marker', iconSize: [16, 16] });
-                L.marker([pos.coords.latitude, pos.coords.longitude], {icon: myIcon}).addTo(map).bindPopup("أنت هنا");
-                L.polyline([[pos.coords.latitude, pos.coords.longitude], [lat, lng]], {color: '#38bdf8', dashArray: '5, 10', weight: 3}).addTo(map);
-            });
+                
+                L.marker([myLat, myLng], {icon: myIcon}).addTo(map).bindPopup("أنت هنا");
+                L.polyline([[myLat, myLng], [lat, lng]], {
+                    color: '#38bdf8', dashArray: '10, 10', weight: 4, opacity: 0.8
+                }).addTo(map).bindTooltip("المسار للزبون");
+            }, null, {enableHighAccuracy: true});
         }
 
         function renderList() {
@@ -149,30 +152,9 @@
                 `<div class="card">
                     <strong>${u.name}</strong><br>
                     <small>بوكس: ${u.pole}</small>
-                    <button class="btn" style="background:var(--accent);" onclick="showMap('${u.coords}')">🗺️ عرض الخريطة المتطورة</button>
-                    <div style="display:flex; gap:10px; margin-top:10px;">
-                        <button onclick="editUser(${u.id})" style="flex:1; padding:8px; background:#475569; border:none; border-radius:5px; color:white;">✏️ تعديل</button>
-                        <button onclick="deleteUser(${u.id})" style="flex:1; padding:8px; background:#991b1b; border:none; border-radius:5px; color:white;">🗑️ حذف</button>
-                    </div>
+                    <button class="btn" style="background:var(--accent);" onclick="showMap('${u.coords}')">🗺️ عرض المسار</button>
                 </div>`
             ).join('');
-        }
-
-        function editUser(id) {
-            const u = JSON.parse(localStorage.getItem('users')).find(x => x.id === id);
-            document.getElementById('editId').value = u.id;
-            document.getElementById('name').value = u.name;
-            document.getElementById('pole').value = u.pole;
-            document.getElementById('coords').value = u.coords;
-            showPage('add-page');
-        }
-
-        function deleteUser(id) {
-            if(confirm("⚠️ حذف المشترك؟")) {
-                let users = JSON.parse(localStorage.getItem('users')).filter(u => u.id !== id);
-                localStorage.setItem('users', JSON.stringify(users));
-                renderList();
-            }
         }
     </script>
 </body>
