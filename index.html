@@ -2,26 +2,25 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FTTH PRO | النظام الذكي</title>
+    <title>FTTH PRO | نظام الإدارة السحابي</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root { --glass: rgba(255, 255, 255, 0.08); --accent: #38bdf8; --bg: #020617; --success: #22c55e; --danger: #ef4444; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; min-height: 100vh; }
-        
-        .header { padding: 25px; text-align: center; font-size: 1.4rem; color: var(--accent); font-weight: bold; }
         .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin: 15px; }
         input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; }
         .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.3s; }
-        
-        /* التبويبات */
-        .tabs { display: flex; gap: 10px; padding: 0 15px 15px 15px; }
         .tab-btn { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; cursor: pointer; }
         .tab-btn.active { background: var(--accent); color: #020617; }
-        
-        #app-container, #details-page, #map-area { display: none; }
+        #app-container, #details-page, #map-area, #section-add, #section-list { display: none; }
         .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         #map { height: 350px; width: 100%; border-radius: 20px; }
     </style>
@@ -37,11 +36,10 @@
         </div>
     </div>
 
-    <!-- App -->
+    <!-- App Container -->
     <div id="app-container">
-        <div class="header">لوحة المشتركين الذكية</div>
-        
-        <div class="tabs">
+        <div class="header" style="padding: 20px; text-align: center; color: var(--accent);">لوحة المشتركين السحابية</div>
+        <div class="tabs" style="display: flex; gap: 10px; padding: 0 15px 15px 15px;">
             <button class="tab-btn active" id="btn-add" onclick="showSection('add')">➕ إضافة</button>
             <button class="tab-btn" id="btn-list" onclick="showSection('list')">👥 المشتركين</button>
         </div>
@@ -52,14 +50,12 @@
                 <input type="text" id="pole" placeholder="اسم البوكس">
                 <input type="text" id="coords" placeholder="الإحداثيات (GPS)" readonly>
                 <button class="btn" style="background:#475569;" onclick="getLocation()">📍 تحديد موقعي</button>
-                <button class="btn" style="background:var(--success);" onclick="saveUser()">💾 حفظ المشترك</button>
+                <button class="btn" style="background:var(--success);" onclick="saveUser()">💾 حفظ في السحابة</button>
             </div>
         </div>
 
         <div id="section-list">
-            <div style="padding: 0 15px;">
-                <input type="text" id="searchInput" placeholder="🔍 بحث سريع..." onkeyup="filterUsers()">
-            </div>
+            <div style="padding: 0 15px;"><input type="text" id="searchInput" placeholder="🔍 بحث سريع..." onkeyup="filterUsers()"></div>
             <div id="userList" class="glass-card"></div>
         </div>
     </div>
@@ -74,18 +70,28 @@
             <button class="btn" style="background:var(--success);" onclick="openGoogleMaps()">📍 خرائط Google</button>
             <button class="btn" style="background:var(--danger);" onclick="deleteUser()">🗑️ حذف المشترك</button>
         </div>
-        <div id="map-area" class="glass-card">
-            <div id="map"></div>
-            <button class="btn" style="background:var(--danger);" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button>
-        </div>
+        <div id="map-area" class="glass-card"><div id="map"></div><button class="btn" style="background:var(--danger);" onclick="document.getElementById('map-area').style.display='none'">إغلاق الخريطة</button></div>
     </div>
 
     <script>
-        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        // --- إعداد Firebase ---
+        const firebaseConfig = {
+            apiKey: "AiZaSyCXCJlcPudupo6LS84cxppl12RliZMzCuY",
+            authDomain: "ftth-cf317.firebaseapp.com",
+            projectId: "ftth-cf317",
+            storageBucket: "ftth-cf317.firebasestorage.app",
+            messagingSenderId: "818469189739",
+            appId: "1:818469189739:web:601bd0247fa3542d28992e",
+            measurementId: "G-S1W0J3VJXZ"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let users = [];
         let currentIdx = -1;
 
         function login() { if(document.getElementById('pass').value === "2442") { document.getElementById('login-page').style.display='none'; document.getElementById('app-container').style.display='block'; showSection('add'); renderList(); } }
-        
+
         function showSection(sec) {
             document.getElementById('section-add').style.display = (sec === 'add') ? 'block' : 'none';
             document.getElementById('section-list').style.display = (sec === 'list') ? 'block' : 'none';
@@ -96,23 +102,25 @@
         function getLocation() { navigator.geolocation.getCurrentPosition(p => document.getElementById('coords').value = `${p.coords.latitude},${p.coords.longitude}`); }
 
         function saveUser() {
-            users.push({ name: document.getElementById('name').value, pole: document.getElementById('pole').value, coords: document.getElementById('coords').value });
-            localStorage.setItem('users', JSON.stringify(users));
-            renderList(); alert("✅ تم الحفظ"); showSection('list');
+            db.collection("users").add({
+                name: document.getElementById('name').value,
+                pole: document.getElementById('pole').value,
+                coords: document.getElementById('coords').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { alert("✅ تم الحفظ في السحابة"); renderList(); showSection('list'); });
         }
 
         function renderList() {
-            document.getElementById('userList').innerHTML = users.map((u, i) => `
-                <div class="user-item" onclick="viewDetails(${i})">
-                    <div><strong>${u.name}</strong><br><small>بوكس: ${u.pole}</small></div>
-                    <span>➤</span>
-                </div>
-            `).join('');
-        }
-
-        function filterUsers() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.user-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(term) ? 'flex' : 'none');
+            db.collection("users").orderBy("timestamp", "desc").get().then((querySnapshot) => {
+                users = [];
+                querySnapshot.forEach((doc) => users.push({ id: doc.id, ...doc.data() }));
+                document.getElementById('userList').innerHTML = users.map((u, i) => `
+                    <div class="user-item" onclick="viewDetails(${i})">
+                        <div><strong>${u.name}</strong><br><small>بوكس: ${u.pole}</small></div>
+                        <span>➤</span>
+                    </div>
+                `).join('');
+            });
         }
 
         function viewDetails(i) {
@@ -124,18 +132,22 @@
         }
 
         function backToList() { document.getElementById('details-page').style.display = 'none'; document.getElementById('app-container').style.display = 'block'; }
-        
-        function openGoogleMaps() { window.open(`https://www.google.com/maps/dir/?api=1&destination=${users[currentIdx].coords}`, '_blank'); }
 
-        function deleteUser() { users.splice(currentIdx, 1); localStorage.setItem('users', JSON.stringify(users)); renderList(); backToList(); }
+        function deleteUser() {
+            db.collection("users").doc(users[currentIdx].id).delete().then(() => { alert("🗑️ تم الحذف"); backToList(); renderList(); });
+        }
+
+        function filterUsers() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.user-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(term) ? 'flex' : 'none');
+        }
 
         function showMapOnDetails() {
             document.getElementById('map-area').style.display = 'block';
             const [lat, lng] = users[currentIdx].coords.split(',').map(Number);
             const map = L.map('map').setView([lat, lng], 17);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            const arrow = L.divIcon({ html: '<div style="font-size:32px; color:#3b82f6; transform:rotate(45deg);">➤</div>', className: '' });
-            L.marker([lat, lng], {icon: arrow}).addTo(map);
+            L.marker([lat, lng]).addTo(map).bindPopup(users[currentIdx].name);
         }
     </script>
 </body>
