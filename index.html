@@ -5,120 +5,127 @@
     <title>FTTH - إدارة الشبكة</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --primary: #003366; --accent: #00d2ff; --danger: #e63946; --success: #2a9d8f; --warning: #f4a261; }
-        body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+        :root { --primary: #003366; --accent: #00d2ff; --bg: #f4f7f6; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; padding: 0; }
         
-        /* Header & Branding */
-        .header { background: var(--primary); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .ftth-icon { width: 50px; height: 50px; fill: var(--accent); margin-bottom: 5px; }
+        /* القائمة العلوية */
+        .top-bar { background: var(--primary); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .menu-btn { font-size: 28px; cursor: pointer; color: white; margin-left: 10px; }
         
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-right: 5px solid var(--primary); }
+        /* القائمة الجانبية */
+        .sidebar { height: 100%; width: 0; position: fixed; top: 0; left: 0; background: var(--primary); transition: 0.3s; z-index: 1000; padding-top: 60px; overflow-x: hidden; }
+        .sidebar a { padding: 20px 25px; text-decoration: none; font-size: 18px; color: white; display: block; border-bottom: 1px solid #004a94; }
+        .sidebar a:hover { background: #004a94; }
         
-        input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; margin-top: 8px; transition: 0.3s; }
-        .btn-gps { background-color: var(--primary); }
-        .btn-save { background-color: var(--success); }
-        .btn-map { background-color: #4285F4; padding: 8px 12px; font-size: 13px; }
-        .btn-del { background-color: var(--danger); padding: 8px 12px; font-size: 13px; }
-
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; font-size: 14px; }
-        th { background: #f8f9fa; padding: 12px; color: #555; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        
-        .badge { font-weight: bold; padding: 4px 8px; border-radius: 6px; }
+        /* الصفحات */
+        .page { padding: 20px; display: none; }
+        .active { display: block; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #map { height: 400px; width: 100%; border-radius: 10px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <svg class="ftth-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
-        <h2 style="margin:0;">إدارة شبكة FTTH</h2>
+    <div class="top-bar">
+        <div style="font-weight:bold; font-size: 18px;">إدارة شبكة FTTH</div>
+        <div class="menu-btn" onclick="toggleNav()">⋮</div>
     </div>
 
-    <!-- البحث -->
-    <input type="text" id="searchInput" placeholder="🔍 بحث عن مشترك..." onkeyup="renderTable()" style="border: 2px solid var(--primary);">
+    <div id="sidebar" class="sidebar">
+        <a href="#" onclick="showPage('add-page')">🏠 إضافة مشترك</a>
+        <a href="#" onclick="showPage('list-page')">📋 المشتركين</a>
+        <a href="#" onclick="showPage('map-page')">🗺️ خريطة المشتركين</a>
+        <a href="#" onclick="showPage('poles-page')">🔌 خريطة الأعمدة</a>
+    </div>
 
-    <!-- الإدخال -->
-    <div class="card">
-        <input type="text" id="name" placeholder="اسم المشترك">
-        <input type="tel" id="phone" placeholder="رقم الهاتف">
-        <input type="text" id="pole" placeholder="اسم العمود">
-        <div style="display: flex; gap: 10px;">
-            <input type="date" id="start" style="width:50%" title="تاريخ التفعيل">
-            <input type="date" id="end" style="width:50%" title="تاريخ الانتهاء">
+    <!-- الصفحة 1: الإضافة -->
+    <div id="add-page" class="page active">
+        <div class="card">
+            <h3>إضافة مشترك جديد</h3>
+            <input type="text" id="name" placeholder="اسم المشترك">
+            <input type="tel" id="phone" placeholder="رقم الهاتف">
+            <input type="text" id="pole" placeholder="اسم العمود/البوكس">
+            <input type="date" id="end" title="تاريخ الانتهاء">
+            <input type="text" id="lat" placeholder="إحداثيات الموقع (GPS)" readonly style="background:#f9f9f9;">
+            <button onclick="getLocation()" class="btn" style="background:var(--primary);">📍 التقاط الموقع الحالي</button>
+            <button onclick="saveUser()" class="btn" style="background:#2a9d8f;">💾 حفظ المشترك</button>
         </div>
-        <input type="text" id="lat" placeholder="إحداثيات الموقع (GPS)" readonly style="background:#f9f9f9;">
-        <button onclick="getCurrentLocation()" class="btn btn-gps">📍 التقاط موقعي (GPS)</button>
-        <button onclick="saveUser()" class="btn btn-save">💾 حفظ المشترك</button>
     </div>
 
-    <!-- الجدول -->
-    <div class="card">
-        <table>
-            <thead><tr><th>المشترك</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-            <tbody id="userTable"></tbody>
-        </table>
+    <!-- الصفحة 2: قائمة المشتركين -->
+    <div id="list-page" class="page">
+        <input type="text" id="search" placeholder="🔍 ابحث عن اسم المشترك..." onkeyup="renderList()">
+        <div class="card">
+            <table id="userTable"></table>
+        </div>
+    </div>
+
+    <!-- الصفحة 3: الخريطة العامة -->
+    <div id="map-page" class="page">
+        <div class="card"><h3>خريطة المشتركين</h3><div id="mapUsers"></div></div>
+    </div>
+
+    <!-- الصفحة 4: خريطة الأعمدة -->
+    <div id="poles-page" class="page">
+        <div class="card"><h3>خريطة الأعمدة (البوكسات)</h3><div id="mapPoles"></div></div>
     </div>
 
     <script>
-        function getCurrentLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    document.getElementById('lat').value = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
-                    alert("✅ تم تحديد الموقع");
-                });
-            } else { alert("GPS غير مدعوم"); }
+        function toggleNav() { document.getElementById("sidebar").style.width = document.getElementById("sidebar").style.width === "250px" ? "0" : "250px"; }
+        
+        function showPage(id) { 
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            toggleNav();
+            if(id === 'map-page') renderMap('mapUsers', false);
+            if(id === 'poles-page') renderMap('mapPoles', true);
+        }
+
+        function getLocation() {
+            navigator.geolocation.getCurrentPosition(pos => {
+                document.getElementById('lat').value = `${pos.coords.latitude},${pos.coords.longitude}`;
+                alert("✅ تم تحديد الموقع");
+            });
         }
 
         function saveUser() {
-            const u = {
-                id: Date.now(),
-                name: document.getElementById('name').value,
-                phone: document.getElementById('phone').value,
-                pole: document.getElementById('pole').value,
-                start: document.getElementById('start').value,
-                end: document.getElementById('end').value,
-                lat: document.getElementById('lat').value
-            };
-            if(!u.name || !u.lat) { alert("⚠️ أدخل الاسم وحدد الموقع!"); return; }
+            const u = { id: Date.now(), name: document.getElementById('name').value, phone: document.getElementById('phone').value, pole: document.getElementById('pole').value, end: document.getElementById('end').value, lat: document.getElementById('lat').value };
+            if(!u.name || !u.lat) { alert("⚠️ أدخل البيانات أولاً"); return; }
             let users = JSON.parse(localStorage.getItem('users') || '[]');
             users.push(u);
             localStorage.setItem('users', JSON.stringify(users));
-            location.reload();
+            alert("تم الحفظ!"); location.reload();
         }
 
-        function renderTable() {
-            const filter = document.getElementById('searchInput').value.toLowerCase();
+        function renderList() {
+            const filter = document.getElementById('search').value.toLowerCase();
             const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const tbody = document.getElementById('userTable');
-            const today = new Date();
-
-            tbody.innerHTML = users.filter(u => u.name.toLowerCase().includes(filter)).map(u => {
-                const diff = Math.ceil((new Date(u.end) - today) / (1000 * 60 * 60 * 24));
-                const color = diff < 0 ? 'var(--danger)' : diff <= 3 ? 'var(--warning)' : 'var(--success)';
-                const text = diff < 0 ? 'منتهي' : diff + ' يوم';
-                
-                return `<tr>
-                    <td><strong>${u.name}</strong><br><small>📞 ${u.phone} | عمود: ${u.pole}</small></td>
-                    <td><span class="badge" style="color:${color}">${text}</span></td>
-                    <td>
-                        <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${u.lat}')" class="btn btn-map">🗺️</button>
-                        <button onclick="deleteUser(${u.id})" class="btn btn-del">🗑️</button>
-                    </td>
-                </tr>`;
-            }).join('');
+            document.getElementById('userTable').innerHTML = users.filter(u => u.name.toLowerCase().includes(filter)).map(u => 
+                `<tr><td>${u.name}</td><td><button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${u.lat}')">🗺️</button></td></tr>`
+            ).join('');
         }
 
-        function deleteUser(id) {
-            if(confirm("حذف المشترك؟")) {
-                let users = JSON.parse(localStorage.getItem('users')).filter(u => u.id !== id);
-                localStorage.setItem('users', JSON.stringify(users));
-                renderTable();
+        function renderMap(elementId, isPoles) {
+            document.getElementById(elementId).innerHTML = "<div id='map'></div>";
+            const map = L.map('map').setView([31.986, 44.920], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if(isPoles) {
+                const uniquePoles = [...new Map(users.map(item => [item.pole, item])).values()];
+                uniquePoles.forEach(u => L.marker(u.lat.split(',')).addTo(map).bindPopup("البوكس: " + u.pole));
+            } else {
+                users.forEach(u => L.marker(u.lat.split(',')).addTo(map).bindPopup(u.name));
             }
         }
-        renderTable();
+        renderList();
     </script>
 </body>
 </html>
