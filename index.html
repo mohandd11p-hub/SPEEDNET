@@ -2,79 +2,71 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FTTH - إدارة الشبكة</title>
+    <title>FTTH PRO - نظام الإدارة</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --primary: #003366; --accent: #00d2ff; --bg: #f4f7f6; }
+        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #f8fafc; --danger: #ef4444; --success: #22c55e; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; padding: 0; }
         
-        /* القائمة العلوية */
-        .top-bar { background: var(--primary); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .menu-btn { font-size: 28px; cursor: pointer; color: white; margin-left: 10px; }
-        
+        /* تأثير النبض الاحترافي */
+        .header-section { background: var(--primary); padding: 30px; text-align: center; color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
+        .fiber-pulse { width: 70px; height: 70px; background: var(--accent); border-radius: 50%; margin: 0 auto 15px; box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); animation: pulse 2s infinite; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; color: var(--primary); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(56, 189, 248, 0); } 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }
+
         /* القائمة الجانبية */
-        .sidebar { height: 100%; width: 0; position: fixed; top: 0; left: 0; background: var(--primary); transition: 0.3s; z-index: 1000; padding-top: 60px; overflow-x: hidden; }
-        .sidebar a { padding: 20px 25px; text-decoration: none; font-size: 18px; color: white; display: block; border-bottom: 1px solid #004a94; }
-        .sidebar a:hover { background: #004a94; }
-        
-        /* الصفحات */
+        .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .menu-btn { font-size: 30px; cursor: pointer; color: var(--primary); margin: 10px; }
+        .sidebar { height: 100%; width: 0; position: fixed; top: 0; left: 0; background: var(--primary); z-index: 1000; padding-top: 60px; transition: 0.3s; overflow-x: hidden; }
+        .sidebar a { padding: 20px; color: white; display: block; text-decoration: none; cursor: pointer; font-size: 18px; border-bottom: 1px solid #1e293b; }
+
+        /* الصفحات والأزرار */
         .page { padding: 20px; display: none; }
         .active { display: block; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #map { height: 400px; width: 100%; border-radius: 10px; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { transform: scale(0.98); opacity: 0.9; }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        td { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div style="font-weight:bold; font-size: 18px;">إدارة شبكة FTTH</div>
-        <div class="menu-btn" onclick="toggleNav()">⋮</div>
+        <div class="menu-btn" onclick="toggleNav()">☰</div>
+        <div style="font-weight:bold; font-size: 18px;">نظام الإدارة</div>
     </div>
 
     <div id="sidebar" class="sidebar">
-        <a href="#" onclick="showPage('add-page')">🏠 إضافة مشترك</a>
-        <a href="#" onclick="showPage('list-page')">📋 المشتركين</a>
-        <a href="#" onclick="showPage('map-page')">🗺️ خريطة المشتركين</a>
-        <a href="#" onclick="showPage('poles-page')">🔌 خريطة الأعمدة</a>
+        <a onclick="showPage('add-page')">🏠 إضافة مشترك</a>
+        <a onclick="checkAccess()">📋 قائمة المشتركين</a>
     </div>
 
-    <!-- الصفحة 1: الإضافة -->
+    <div class="header-section">
+        <div class="fiber-pulse">FTTH</div>
+        <h3>إدارة الشبكة الذكية</h3>
+    </div>
+
+    <!-- الصفحة 1: الإضافة والتعديل -->
     <div id="add-page" class="page active">
         <div class="card">
-            <h3>إضافة مشترك جديد</h3>
+            <h3 id="formTitle">إضافة مشترك جديد</h3>
+            <input type="hidden" id="editId">
             <input type="text" id="name" placeholder="اسم المشترك">
-            <input type="tel" id="phone" placeholder="رقم الهاتف">
-            <input type="text" id="pole" placeholder="اسم العمود/البوكس">
-            <input type="date" id="end" title="تاريخ الانتهاء">
-            <input type="text" id="lat" placeholder="إحداثيات الموقع (GPS)" readonly style="background:#f9f9f9;">
-            <button onclick="getLocation()" class="btn" style="background:var(--primary);">📍 التقاط الموقع الحالي</button>
-            <button onclick="saveUser()" class="btn" style="background:#2a9d8f;">💾 حفظ المشترك</button>
+            <input type="text" id="username" placeholder="اسم المستخدم">
+            <input type="text" id="password" placeholder="كلمة المرور">
+            <input type="text" id="pole" placeholder="اسم البوكس/العمود">
+            <button id="saveBtn" onclick="saveUser()" class="btn" style="background:var(--accent); color:var(--primary);">حفظ المشترك</button>
+            <button onclick="resetForm()" class="btn" style="background:#64748b;">إلغاء التعديل</button>
         </div>
     </div>
 
-    <!-- الصفحة 2: قائمة المشتركين -->
+    <!-- الصفحة 2: القائمة (محمية) -->
     <div id="list-page" class="page">
-        <input type="text" id="search" placeholder="🔍 ابحث عن اسم المشترك..." onkeyup="renderList()">
-        <div class="card">
-            <table id="userTable"></table>
-        </div>
-    </div>
-
-    <!-- الصفحة 3: الخريطة العامة -->
-    <div id="map-page" class="page">
-        <div class="card"><h3>خريطة المشتركين</h3><div id="mapUsers"></div></div>
-    </div>
-
-    <!-- الصفحة 4: خريطة الأعمدة -->
-    <div id="poles-page" class="page">
-        <div class="card"><h3>خريطة الأعمدة (البوكسات)</h3><div id="mapPoles"></div></div>
+        <input type="text" id="search" placeholder="🔍 بحث عن مشترك..." onkeyup="renderList()">
+        <table id="userTable"></table>
     </div>
 
     <script>
@@ -84,48 +76,84 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             toggleNav();
-            if(id === 'map-page') renderMap('mapUsers', false);
-            if(id === 'poles-page') renderMap('mapPoles', true);
         }
 
-        function getLocation() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                document.getElementById('lat').value = `${pos.coords.latitude},${pos.coords.longitude}`;
-                alert("✅ تم تحديد الموقع");
-            });
+        // الحماية بالرمز
+        function checkAccess() {
+            const pin = prompt("🔐 يرجى إدخال رمز الوصول (2442):");
+            if (pin === "2442") { 
+                showPage('list-page'); 
+                renderList(); 
+            } else { alert("❌ رمز الدخول خاطئ!"); }
         }
 
+        // الحفظ والتحديث
         function saveUser() {
-            const u = { id: Date.now(), name: document.getElementById('name').value, phone: document.getElementById('phone').value, pole: document.getElementById('pole').value, end: document.getElementById('end').value, lat: document.getElementById('lat').value };
-            if(!u.name || !u.lat) { alert("⚠️ أدخل البيانات أولاً"); return; }
+            const id = document.getElementById('editId').value;
             let users = JSON.parse(localStorage.getItem('users') || '[]');
-            users.push(u);
+            const u = { 
+                id: id ? parseInt(id) : Date.now(), 
+                name: document.getElementById('name').value, 
+                username: document.getElementById('username').value, 
+                password: document.getElementById('password').value, 
+                pole: document.getElementById('pole').value 
+            };
+            
+            if(!u.name) { alert("⚠️ يرجى إدخال الاسم!"); return; }
+
+            if(id) { users = users.map(item => item.id == id ? u : item); alert("✅ تم التحديث!"); }
+            else { users.push(u); alert("✅ تم الحفظ!"); }
+            
             localStorage.setItem('users', JSON.stringify(users));
-            alert("تم الحفظ!"); location.reload();
+            resetForm();
+            showPage('list-page');
+            renderList();
+        }
+
+        function editUser(id) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const u = users.find(x => x.id === id);
+            document.getElementById('editId').value = u.id;
+            document.getElementById('name').value = u.name;
+            document.getElementById('username').value = u.username;
+            document.getElementById('password').value = u.password;
+            document.getElementById('pole').value = u.pole;
+            document.getElementById('formTitle').innerText = "تعديل البيانات";
+            document.getElementById('saveBtn').innerText = "تحديث البيانات";
+            showPage('add-page');
+        }
+
+        function deleteUser(id) {
+            if(confirm("⚠️ هل تريد حذف المشترك نهائياً؟")) {
+                let users = JSON.parse(localStorage.getItem('users')).filter(u => u.id !== id);
+                localStorage.setItem('users', JSON.stringify(users));
+                renderList();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = "";
+            document.getElementById('name').value = "";
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('pole').value = "";
+            document.getElementById('formTitle').innerText = "إضافة مشترك جديد";
+            document.getElementById('saveBtn').innerText = "حفظ المشترك";
         }
 
         function renderList() {
             const filter = document.getElementById('search').value.toLowerCase();
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             document.getElementById('userTable').innerHTML = users.filter(u => u.name.toLowerCase().includes(filter)).map(u => 
-                `<tr><td>${u.name}</td><td><button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${u.lat}')">🗺️</button></td></tr>`
+                `<tr>
+                    <td><strong>${u.name}</strong><br><small>البوكس: ${u.pole} | اليوزر: ${u.username}</small></td>
+                    <td>
+                        <button onclick="editUser(${u.id})" style="background:none; border:none; cursor:pointer;">✏️</button>
+                        <button onclick="deleteUser(${u.id})" style="background:none; border:none; cursor:pointer; color:red;">🗑️</button>
+                    </td>
+                </tr>`
             ).join('');
         }
-
-        function renderMap(elementId, isPoles) {
-            document.getElementById(elementId).innerHTML = "<div id='map'></div>";
-            const map = L.map('map').setView([31.986, 44.920], 15);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            
-            if(isPoles) {
-                const uniquePoles = [...new Map(users.map(item => [item.pole, item])).values()];
-                uniquePoles.forEach(u => L.marker(u.lat.split(',')).addTo(map).bindPopup("البوكس: " + u.pole));
-            } else {
-                users.forEach(u => L.marker(u.lat.split(',')).addTo(map).bindPopup(u.name));
-            }
-        }
-        renderList();
     </script>
 </body>
 </html>
